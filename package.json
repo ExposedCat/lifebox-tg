@@ -7,7 +7,7 @@
     "compile": "tsc",
     "start": "npm run compile && npm run copyFiles && node .",
     "pretty": "npx prettier --write src",
-    "copyFiles": "cp -r src/locales build"
+    "copyFiles": "cp -r src/locales src/data build"
   },
   "repository": {
     "type": "git",

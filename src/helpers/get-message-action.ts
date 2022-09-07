@@ -1,65 +1,55 @@
 import { MessageActions } from '../types/index.js'
 
+import fs from 'fs/promises'
+
+import { resolvePath } from './index.js'
+
 function wordPattern(word: string) {
-	const prefix = '(?:s|^)'
+	const prefix = '(?:\\s|^)'
 	const shouldPrefix = !word.startsWith('*')
-	const infix = '(?:s|$)'
+	const infix = '(?:\\s|$)'
 	const shouldInfix = !word.endsWith('*')
 
 	const clearWord = word.replaceAll('*', '').replaceAll('+', '\\+')
 	const finalPrefix = shouldPrefix ? prefix : ''
 	const finalInfix = shouldInfix ? infix : ''
 
-	return `${finalPrefix}${clearWord}${finalInfix}`
+	return new RegExp(`${finalPrefix}${clearWord}${finalInfix}`, 'i')
 }
 
-function getWords(message: string) {
-	let words = []
-	let word = ''
+function getSentence(message: string) {
+	let sentence = ''
 	for (const symbol of message) {
-		if (symbol === ' ') {
-			words.push(word)
-			word = ''
-		} else {
-			const code = symbol.charCodeAt(0)
-			const russian = (code >= 1072 && code <= 1102) || code === 105
-			const special = symbol === '+' || symbol === '-'
-			if (russian || special) {
-				word += symbol
-			}
+		const code = symbol.charCodeAt(0)
+		const russian = (code >= 1072 && code <= 1103) || code === 105
+		const special = '👍👎+- '.includes(symbol)
+		if (russian || special) {
+			sentence += symbol
 		}
 	}
-	words.push(word)
-	return words
+	return sentence
 }
 
-function checkWordAction(word: string, actionWords: string[]) {
-	const pattern = new RegExp(actionWords.map(wordPattern).join('|'), 'i')
-	return pattern.test(word)
-}
-
-function getMessageAction(message: string) {
-	const words = getWords(message)
-	// TODO: Move to separate file?
+async function getMessageAction(message: string) {
+	const sentence = getSentence(message)
+	const wordsFile = await fs.readFile(
+		resolvePath(import.meta.url, '../data/words.json'),
+		'utf-8'
+	)
+	const actionWords = JSON.parse(wordsFile)
 	const increaseWords = {
-		actionWords: [
-			'спасибо',
-			'лайк',
-			'найс',
-			'*хорош',
-			'молодец',
-			'малодец',
-			'+'
-		],
+		actionWords: (actionWords.increase as string[]) || [],
 		action: MessageActions.IncreaseCredits
 	}
 	const decreaseWords = {
-		actionWords: ['осуждаю', 'дизлайк*', 'диз', 'найс', '*плох', '-'],
+		actionWords: (actionWords.decrease as string[]) || [],
 		action: MessageActions.DecreaseCredits
 	}
 	for (const { actionWords, action } of [increaseWords, decreaseWords]) {
-		if (words.some(word => checkWordAction(word, actionWords))) {
-			return action
+		for (const word of actionWords) {
+			if (wordPattern(word).test(sentence)) {
+				return action
+			}
 		}
 	}
 	return MessageActions.Nothing
