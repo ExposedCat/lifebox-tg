@@ -20,7 +20,7 @@ function extendContext(bot: Bot, database: Database) {
 function setupMiddlewares(bot: Bot, localeEngine: I18n) {
 	bot.use(session())
 	bot.use(async (ctx, next) => {
-		if ('chat' in ctx) {
+		if (ctx.chat) {
 			return localeEngine.middleware()(ctx, next)
 		} else {
 			return await next()
