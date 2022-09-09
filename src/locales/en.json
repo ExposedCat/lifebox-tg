@@ -3,7 +3,7 @@
         "started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
     },
     "fetch": {
-        "profile": "${name}\n${global} | ${local} 🗞"
+        "profile": "${name}\nYour: ${global} | ${local} 🗞\nAverage: ${average} 🗞"
     },
     "poll": {
         "question": "Rate today",

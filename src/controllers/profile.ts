@@ -2,7 +2,7 @@ import { CustomContext } from '../types/index.js'
 
 import { Composer } from 'grammy'
 
-import { getUserProfile } from '../services/index.js'
+import { getAverageCredits, getUserProfile } from '../services/index.js'
 
 const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).command('profile', async ctx => {
@@ -10,13 +10,15 @@ controller.chatType(['supergroup', 'group']).command('profile', async ctx => {
 		return
 	}
 	const profile = await getUserProfile(ctx.db.users, ctx.from.id, ctx.chat.id)
+	const averageCredits = await getAverageCredits(ctx.db.users, ctx.chat.id)
 	if (!profile) {
 		await ctx.text('error.profileNotFound')
 	} else {
 		await ctx.text('fetch.profile', {
 			name: ctx.from.username || ctx.from.first_name,
 			global: profile.global,
-			local: profile.local
+			local: profile.local,
+			average: averageCredits
 		})
 	}
 })

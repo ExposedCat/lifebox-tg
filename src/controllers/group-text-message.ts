@@ -2,8 +2,11 @@ import { CustomContext } from '../types/index.js'
 
 import { Composer } from 'grammy'
 
-import { getMessageAction } from '../helpers/index.js'
-import { createGroupIfNotExists, updateUser } from '../services/index.js'
+import {
+	createGroupIfNotExists,
+	updateUser,
+	getMessageAction
+} from '../services/index.js'
 
 const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
