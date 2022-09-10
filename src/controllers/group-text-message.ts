@@ -28,15 +28,15 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	// Update target if exists
 	const replyAuthor = ctx.message.reply_to_message?.from
 	if (replyAuthor && replyAuthor.id !== changerId && !replyAuthor.is_bot) {
-		const messageAction = await getMessageAction(ctx.message.text)
-		if (messageAction) {
-			await increaseCredits(
-				userDb,
-				changerId,
-				replyAuthor.id,
-				groupId,
-				messageAction
-			)
+		const { changer: changerAction, target: targetAction } =
+			await getMessageAction(ctx.message.text)
+
+		const increaser = increaseCredits.bind(null, userDb, changerId)
+		if (changerAction) {
+			await increaser(changerId, groupId, changerAction)
+		}
+		if (targetAction) {
+			await increaser(replyAuthor.id, groupId, targetAction)
 		}
 	}
 })

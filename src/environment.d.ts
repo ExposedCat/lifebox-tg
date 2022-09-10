@@ -12,6 +12,7 @@ export declare global {
 			FREE_CREDITS_CHANCE: string
 			FREE_CREDITS_MIN: string
 			FREE_CREDITS_MAX: string
+			DECREASE_CREDITS_CHANCE: string
 		}
 	}
 }

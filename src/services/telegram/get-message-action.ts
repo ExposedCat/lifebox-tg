@@ -11,7 +11,10 @@ async function getMessageAction(message: string) {
 			return action
 		}
 	}
-	return MessageAction.Nothing
+	return {
+		changer: MessageAction.Nothing,
+		target: MessageAction.Nothing
+	}
 }
 
 export { getMessageAction }
