@@ -12,7 +12,7 @@ const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	// Create entities if not exist
 	await createGroupIfNotExists(ctx.db.groups, ctx.chat.id)
-	const increase = ((Math.random() * 100) % 10 | 0) === 1
+	const increase = ((Math.random() * 30) | 0) === 1
 	await updateUser(ctx.db.users, ctx.from.id, ctx.chat.id, Number(increase))
 
 	// Update target if exists
