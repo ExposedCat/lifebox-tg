@@ -1,7 +1,7 @@
-import { MessageActions } from '../../types/index.js'
+import { MessageAction } from '../../types/index.js'
 
 import { getSentence } from '../../helpers/index.js'
-import { getActionByWords } from '../action-providers/index.js'
+import { getActionByWords } from '../credits/index.js'
 
 async function getMessageAction(message: string) {
 	const sentence = getSentence(message)
@@ -11,7 +11,7 @@ async function getMessageAction(message: string) {
 			return action
 		}
 	}
-	return MessageActions.Nothing
+	return MessageAction.Nothing
 }
 
 export { getMessageAction }

@@ -1,4 +1,3 @@
-import { MessageActions } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
 async function updateUser(

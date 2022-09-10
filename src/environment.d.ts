@@ -7,6 +7,11 @@ export declare global {
 			POLL_LANG: string
 			CREDITS_SMALL_PERCENT: string
 			CREDITS_HIGH_PERCENT: string
+			ELO_PROBABILITY_CONST: string
+			ELO_MAX_REWARD: string
+			FREE_CREDITS_CHANCE: string
+			FREE_CREDITS_MIN: string
+			FREE_CREDITS_MAX: string
 		}
 	}
 }
