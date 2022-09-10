@@ -5,7 +5,7 @@ async function updateUser(
 	userDb: Collection,
 	userId: number,
 	groupId: number,
-	action: MessageActions
+	change: number
 ) {
 	let operation = userDb.initializeOrderedBulkOp()
 
@@ -34,7 +34,7 @@ async function updateUser(
 	// Update credits
 	operation.find({ userId, 'credits.groupId': groupId }).updateOne({
 		$inc: {
-			'credits.$.credits': action
+			'credits.$.credits': change
 		}
 	})
 

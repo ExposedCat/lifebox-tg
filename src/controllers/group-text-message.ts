@@ -19,12 +19,14 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	const replyAuthor = ctx.message.reply_to_message?.from
 	if (replyAuthor && replyAuthor.id !== ctx.from.id && !replyAuthor.is_bot) {
 		const messageAction = await getMessageAction(ctx.message.text)
-		await updateUser(
-			ctx.db.users,
-			replyAuthor.id,
-			ctx.chat.id,
-			messageAction
-		)
+		if (messageAction) {
+			await updateUser(
+				ctx.db.users,
+				replyAuthor.id,
+				ctx.chat.id,
+				messageAction
+			)
+		}
 	}
 })
 
