@@ -12,11 +12,6 @@ interface User {
 	credits: LocalUserData[]
 }
 
-interface UserProfile {
-	global: number,
-	local: number
-}
-
 interface Group {
 	_id: ObjectId
 	groupId: number
@@ -27,4 +22,4 @@ interface Database {
 	groups: Collection
 }
 
-export { User, UserProfile, Group, Database }
+export { User, Group, Database }

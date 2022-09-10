@@ -1,11 +1,11 @@
-import { Group, TelegramApiError } from '../types/index.js'
+import { Group, TelegramApiError } from '../../types/index.js'
 import { Collection } from 'mongodb'
 import { Api, GrammyError } from 'grammy'
 import { I18n } from '@grammyjs/i18n/dist/source'
 
 import cron from 'node-schedule'
 
-import { fetchGroups } from './index.js'
+import { fetchGroups } from '../index.js'
 
 async function sendPoll(api: Api, i18n: I18n, group: Group) {
 	const text = (label: string) =>

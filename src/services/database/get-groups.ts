@@ -1,4 +1,4 @@
-import { Group } from '../types/index.js'
+import { Group } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
 function fetchGroups(groupsDb: Collection) {

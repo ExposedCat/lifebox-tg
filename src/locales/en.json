@@ -3,7 +3,14 @@
         "started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
     },
     "fetch": {
-        "profile": "${name}\nYour: ${global} | ${local} 🗞\nAverage: ${average} 🗞"
+        "profile": "${name} ${icon}\nSocial credits: ${credits} 💮\nAverage: ${average} 💮"
+    },
+    "partial": {
+        "icon": {
+            "lowCredits": "🈵",
+            "normalCredits": "🈶",
+            "highCredits": "🈯️"
+        }
     },
     "poll": {
         "question": "Rate today",
