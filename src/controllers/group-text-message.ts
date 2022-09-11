@@ -12,6 +12,9 @@ import { getRandomIntByChance } from '../helpers/index.js'
 
 const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
+	if (ctx.from.is_bot) {
+		return
+	}
 	const changerId = ctx.from.id
 	const changerName = ctx.from.first_name
 	const groupId = ctx.chat.id
