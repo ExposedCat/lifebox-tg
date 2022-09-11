@@ -9,6 +9,9 @@ class AggregationBuilder {
 	static unwind = this.stage.bind(null, 'unwind')
 	static arrayElemAt = this.stage.bind(null, 'arrayElemAt')
 	static subtract = this.stage.bind(null, 'subtract')
+	static in = this.stage.bind(null, 'in')
+	static indexOfArray = this.stage.bind(null, 'indexOfArray')
+	static addFields = this.stage.bind(null, 'addFields')
 }
 
 export { AggregationBuilder }

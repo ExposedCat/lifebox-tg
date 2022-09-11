@@ -6,7 +6,7 @@ import {
 	createGroupIfNotExists,
 	updateUser,
 	getMessageAction,
-	increaseCredits
+	getProfiles
 } from '../services/index.js'
 import { getRandomIntByChance } from '../helpers/index.js'
 
@@ -25,18 +25,25 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	)
 	await updateUser(userDb, changerId, groupId, balanceChange)
 
-	// Update target if exists
+	// Update user & target if the latter exists
 	const replyAuthor = ctx.message.reply_to_message?.from
 	if (replyAuthor && replyAuthor.id !== changerId && !replyAuthor.is_bot) {
-		const { changer: changerAction, target: targetAction } =
-			await getMessageAction(ctx.message.text)
-
-		const increaser = increaseCredits.bind(null, userDb, changerId)
-		if (changerAction) {
-			await increaser(changerId, groupId, changerAction)
+		const credits = await getProfiles(
+			userDb,
+			changerId,
+			replyAuthor.id,
+			groupId
+		)
+		const { changer, target } = await getMessageAction(
+			ctx.message.text,
+			credits.changer,
+			credits.target
+		)
+		if (changer) {
+			await updateUser(userDb, changerId, groupId, changer)
 		}
-		if (targetAction) {
-			await increaser(replyAuthor.id, groupId, targetAction)
+		if (target) {
+			await updateUser(userDb, replyAuthor.id, groupId, target)
 		}
 	}
 })

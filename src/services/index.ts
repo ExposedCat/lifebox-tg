@@ -8,4 +8,4 @@ export { updateUser } from './database/update-user.js'
 export { getUserProfile } from './database/get-user-profile.js'
 export { getAverageCredits } from './database/get-average-credits.js'
 
-export { increaseCredits } from './credits/index.js'
+export { getProfiles } from './credits/index.js'

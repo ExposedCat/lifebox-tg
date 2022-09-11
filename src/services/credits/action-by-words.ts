@@ -5,10 +5,15 @@ import fs from 'fs/promises'
 import {
 	resolvePath,
 	sentenceContainsWord,
-	getRandomIntByChance
+	getRandomIntByChance,
+	getBalanceChange
 } from '../../helpers/index.js'
 
-async function getActionByWords(sentence: string) {
+async function getActionByWords(
+	sentence: string,
+	changer: number,
+	target: number
+) {
 	const wordsFile = await fs.readFile(
 		resolvePath(import.meta.url, '../../data/words.json'),
 		'utf-8'
@@ -24,14 +29,22 @@ async function getActionByWords(sentence: string) {
 		actionWords.increase as string[]
 	)
 	if (containsIncrease) {
-		result.target = MessageAction.IncreaseCredits
+		result.target = getBalanceChange(
+			changer,
+			target,
+			MessageAction.IncreaseCredits
+		)
 	}
 	const containsDecrease = sentenceContainsWord(
 		sentence,
 		actionWords.decrease as string[]
 	)
 	if (containsDecrease) {
-		result.target = MessageAction.DecreaseCredits
+		result.target = getBalanceChange(
+			changer,
+			target,
+			MessageAction.DecreaseCredits
+		)
 	}
 
 	const containsBad = sentenceContainsWord(
