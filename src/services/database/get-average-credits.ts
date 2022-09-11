@@ -1,12 +1,13 @@
+import { Median } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
 import { AggregationBuilder as $ } from '../../helpers/index.js'
 
 async function getAverageCredits(userDb: Collection, groupId: number) {
 	const matchQuery = $.match({ 'credits.groupId': groupId })
-	const aggregation = userDb.aggregate<{ median: number }>([
+	const aggregation = userDb.aggregate<Median>([
 		matchQuery,
-		$.unwind('$credits'),
+		$.unwind('credits'),
 		$.sort({ 'credits.credits': 1 }),
 		matchQuery,
 		$.group({

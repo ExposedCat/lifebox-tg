@@ -10,7 +10,9 @@ function validateEnv() {
 		'FREE_CREDITS_CHANCE',
 		'FREE_CREDITS_MIN',
 		'FREE_CREDITS_MAX',
-		'DECREASE_CREDITS_CHANCE'
+		'DECREASE_CREDITS_CHANCE',
+		'TOP_LIMIT',
+		'UNNAMED'
 	]
 	for (const env of required) {
 		if (process.env[env] === undefined) {

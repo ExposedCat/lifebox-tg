@@ -12,7 +12,8 @@ async function startApp() {
 
 	let database
 	try {
-		database = await connectToDb()
+		const connection = await connectToDb()
+		database = connection.database
 	} catch (error) {
 		console.error(`Error occurred while connecting to the database:`, error)
 		process.exit(2)

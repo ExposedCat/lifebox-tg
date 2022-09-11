@@ -13,6 +13,7 @@ import { getRandomIntByChance } from '../helpers/index.js'
 const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	const changerId = ctx.from.id
+	const changerName = ctx.from.first_name
 	const groupId = ctx.chat.id
 	const userDb = ctx.db.users
 
@@ -23,7 +24,7 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 		Number(process.env.FREE_CREDITS_MIN),
 		Number(process.env.FREE_CREDITS_MAX)
 	)
-	await updateUser(userDb, changerId, groupId, balanceChange)
+	await updateUser(userDb, changerId, groupId, balanceChange, changerName)
 
 	// Update user & target if the latter exists
 	const replyAuthor = ctx.message.reply_to_message?.from
@@ -43,7 +44,13 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 			await updateUser(userDb, changerId, groupId, changer)
 		}
 		if (target) {
-			await updateUser(userDb, replyAuthor.id, groupId, target)
+			await updateUser(
+				userDb,
+				replyAuthor.id,
+				groupId,
+				target,
+				replyAuthor.first_name
+			)
 		}
 	}
 })

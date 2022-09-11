@@ -9,7 +9,7 @@ async function connectToDb() {
 	const users = mongoDb.collection('users')
 	const groups = mongoDb.collection('groups')
 	const database: Database = { users, groups }
-	return database
+	return { database, client }
 }
 
 export { connectToDb }

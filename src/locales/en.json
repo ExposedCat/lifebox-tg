@@ -3,14 +3,16 @@
         "started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
     },
     "fetch": {
-        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${average} 会"
+        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${average} 会",
+        "socialRating": "社会评价体系\n\n${userList}\nAverage: ${average} 会"
     },
     "partial": {
         "icon": {
             "lowCredits": "🈵",
             "normalCredits": "🈶",
             "highCredits": "🈯️"
-        }
+        },
+        "userLine": "${position}. ${name} - ${credits} 会 ${icon}\n"
     },
     "poll": {
         "question": "Rate today",
@@ -23,6 +25,7 @@
         }
     },
     "error": {
-        "profileNotFound": "E: Profile not found\nMaybe try to send any non-command message?"
+        "profileNotFound": "E: Profile not found\nMaybe try to send any non-command message?",
+        "usersNotFound": "E: Users not found for this group\nMaybe try to send any non-command message?"
     }
 }

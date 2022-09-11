@@ -13,12 +13,11 @@ controller.chatType(['supergroup', 'group']).command('profile', async ctx => {
 	if (!profile) {
 		await ctx.text('error.profileNotFound')
 	} else {
-		const icon = ctx.i18n.t(`partial.icon.${profile.state}`)
 		await ctx.text('fetch.profile', {
-			name: ctx.from.username || ctx.from.first_name,
-			credits: profile.credits,
+			name: profile.user.name || process.env.UNNAMED,
+			credits: profile.user.credits,
 			average: profile.averageCredits,
-			icon
+			icon: ctx.i18n.t(`partial.icon.${profile.state}`)
 		})
 	}
 })

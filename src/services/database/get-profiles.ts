@@ -1,3 +1,4 @@
+import { User } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
 import { AggregationBuilder as $ } from '../../helpers/index.js'
@@ -9,9 +10,9 @@ async function getProfiles(
 	groupId: number
 ) {
 	const ids = [changerId, targetId]
-	const profiles = userDb.aggregate<{ credits: number }>([
+	const profiles = userDb.aggregate<User>([
 		$.match({ userId: $.in(ids) }),
-		$.unwind('$credits'),
+		$.unwind('credits'),
 		$.match({ 'credits.groupId': groupId }),
 		$.addFields({
 			__position: $.indexOfArray([ids, '$key'])

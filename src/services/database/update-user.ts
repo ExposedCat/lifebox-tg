@@ -4,7 +4,8 @@ async function updateUser(
 	userDb: Collection,
 	userId: number,
 	groupId: number,
-	change: number
+	change: number,
+	name?: string
 ) {
 	let operation = userDb.initializeOrderedBulkOp()
 
@@ -14,6 +15,7 @@ async function updateUser(
 		.upsert()
 		.updateOne({
 			$setOnInsert: {
+				name,
 				credits: []
 			}
 		})
@@ -30,12 +32,14 @@ async function updateUser(
 			}
 		})
 
-	// Update credits
-	operation.find({ userId, 'credits.groupId': groupId }).updateOne({
+	// Update credits & name if specified
+	let update = {
+		...(name && { $set: { name } }),
 		$inc: {
 			'credits.$.credits': change
 		}
-	})
+	}
+	operation.find({ userId, 'credits.groupId': groupId }).updateOne(update)
 
 	await operation.execute()
 }

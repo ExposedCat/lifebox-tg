@@ -1,17 +1,5 @@
 import { ObjectId, Collection } from 'mongodb'
 
-interface LocalUserData {
-	_id: ObjectId
-	groupId: number
-	credits: number
-}
-
-interface User {
-	_id: ObjectId
-	userId: number
-	credits: LocalUserData[]
-}
-
 interface Group {
 	_id: ObjectId
 	groupId: number
@@ -22,4 +10,14 @@ interface Database {
 	groups: Collection
 }
 
-export { User, Group, Database }
+interface User {
+	userId: number
+	name: string
+	credits: number
+}
+
+interface Median {
+	median: number
+}
+
+export { User, Median, Group, Database }
