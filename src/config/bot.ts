@@ -2,6 +2,7 @@ import { Bot, CustomContext, Database } from '../types/index.js'
 import { I18n } from '@grammyjs/i18n'
 
 import { Bot as TelegramBot, session } from 'grammy'
+import { apiThrottler } from '@grammyjs/transformer-throttler'
 
 import { resolvePath } from '../helpers/index.js'
 
@@ -18,6 +19,8 @@ function extendContext(bot: Bot, database: Database) {
 }
 
 function setupMiddlewares(bot: Bot, localeEngine: I18n) {
+	bot.api.config.use(apiThrottler())
+	
 	bot.use(session())
 	bot.use(async (ctx, next) => {
 		if (ctx.chat) {
