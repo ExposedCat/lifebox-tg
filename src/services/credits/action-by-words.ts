@@ -12,7 +12,7 @@ import {
 async function getActionByWords(
 	sentence: string,
 	changer: number,
-	target: number
+	target?: number
 ) {
 	const wordsFile = await fs.readFile(
 		resolvePath(import.meta.url, '../../data/words.json'),
@@ -24,27 +24,29 @@ async function getActionByWords(
 	}
 
 	const actionWords = JSON.parse(wordsFile)
-	const containsIncrease = sentenceContainsWord(
-		sentence,
-		actionWords.increase as string[]
-	)
-	if (containsIncrease) {
-		result.target = getBalanceChange(
-			changer,
-			target,
-			MessageAction.IncreaseCredits
+	if (target !== undefined) {
+		const containsIncrease = sentenceContainsWord(
+			sentence,
+			actionWords.increase as string[]
 		)
-	}
-	const containsDecrease = sentenceContainsWord(
-		sentence,
-		actionWords.decrease as string[]
-	)
-	if (containsDecrease) {
-		result.target = getBalanceChange(
-			changer,
-			target,
-			MessageAction.DecreaseCredits
+		if (containsIncrease) {
+			result.target = getBalanceChange(
+				changer,
+				target,
+				MessageAction.IncreaseCredits
+			)
+		}
+		const containsDecrease = sentenceContainsWord(
+			sentence,
+			actionWords.decrease as string[]
 		)
+		if (containsDecrease) {
+			result.target = getBalanceChange(
+				changer,
+				target,
+				MessageAction.DecreaseCredits
+			)
+		}
 	}
 
 	const containsBad = sentenceContainsWord(
