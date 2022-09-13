@@ -11,7 +11,8 @@ function validateEnv() {
 		'UNNAMED',
 		'INITIAL_CREDITS',
 		'BAD_WORDS_DECREASE_MIN',
-		'BAD_WORDS_DECREASE_MAX'
+		'BAD_WORDS_DECREASE_MAX',
+		'REACTIONS_PROVIDER_ID'
 	]
 	for (const env of required) {
 		if (process.env[env] === undefined) {

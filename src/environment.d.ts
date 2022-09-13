@@ -14,6 +14,7 @@ export declare global {
 			INITIAL_CREDITS: string
 			BAD_WORDS_DECREASE_MIN: string
 			BAD_WORDS_DECREASE_MAX: string
+			REACTIONS_PROVIDER_ID: string
 		}
 	}
 }
