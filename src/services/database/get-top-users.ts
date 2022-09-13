@@ -1,7 +1,7 @@
 import { User } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
-import { AggregationBuilder as $ } from '../../helpers/index.js'
+import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function getTopSocialUsers(userDb: Collection, groupId: number) {
 	const matchQuery = $.match({ 'credits.groupId': groupId })
@@ -9,7 +9,7 @@ async function getTopSocialUsers(userDb: Collection, groupId: number) {
 		matchQuery,
 		$.unwind('credits'),
 		matchQuery,
-		$.limit(Number(process.env.TOP_LIMIT)),
+		$.limit(Number(process.env.RATING_LIMIT)),
 		$.sort({ 'credits.credits': -1 }),
 		$.project({
 			_id: 0,

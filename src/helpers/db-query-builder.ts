@@ -1,4 +1,4 @@
-class AggregationBuilder {
+class DbQueryBuilder {
 	private static stage(stage: string, value: unknown) {
 		return { [`$${stage}`]: value }
 	}
@@ -13,6 +13,13 @@ class AggregationBuilder {
 	static indexOfArray = this.stage.bind(null, 'indexOfArray')
 	static addFields = this.stage.bind(null, 'addFields')
 	static limit = (limit: number) => this.stage('limit', limit)
+	static setOnInsert = (data: object) => this.stage('setOnInsert', data)
+	static upsert = () => ({ upsert: true })
+	static push = (entity: object) => this.stage('push', entity)
+	static ne = (expression: unknown) => this.stage('ne', expression)
+	static set = (data: object) => this.stage('set', data)
+	static inc = (field: string, value: number) =>
+		this.stage('inc', { [field]: value })
 }
 
-export { AggregationBuilder }
+export { DbQueryBuilder }

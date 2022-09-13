@@ -1,47 +1,44 @@
 import { Collection } from 'mongodb'
 
-async function updateUser(
+import { DbQueryBuilder as $ } from '../../helpers/index.js'
+
+async function updateUserCredits(
 	userDb: Collection,
-	userId: number,
+	id: number,
 	groupId: number,
 	change: number,
 	name?: string
 ) {
 	let operation = userDb.initializeOrderedBulkOp()
 
-	// Create user if not exists
-	operation
-		.find({ userId })
-		.upsert()
-		.updateOne({
-			$setOnInsert: {
-				name,
-				credits: []
-			}
-		})
-
 	// Create user local data if not exists
 	operation
 		.find({
-			userId,
-			'credits.groupId': { $ne: groupId }
+			userId: id,
+			'credits.groupId': $.ne(groupId)
 		})
-		.updateOne({
-			$push: {
-				credits: { groupId, credits: 0 }
-			}
-		})
+		.updateOne(
+			$.push({
+				credits: {
+					groupId,
+					credits: Number(process.env.INITIAL_CREDITS)
+				}
+			})
+		)
 
 	// Update credits & name if specified
 	let update = {
-		...(name && { $set: { name } }),
-		$inc: {
-			'credits.$.credits': change
-		}
+		...(name && $.set({ name })),
+		...$.inc('credits.$.credits', change)
 	}
-	operation.find({ userId, 'credits.groupId': groupId }).updateOne(update)
+	operation
+		.find({
+			userId: id,
+			'credits.groupId': groupId
+		})
+		.updateOne(update)
 
 	await operation.execute()
 }
 
-export { updateUser }
+export { updateUserCredits }

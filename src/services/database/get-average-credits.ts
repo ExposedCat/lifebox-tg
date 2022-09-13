@@ -1,7 +1,7 @@
 import { Median } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
-import { AggregationBuilder as $ } from '../../helpers/index.js'
+import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function getAverageCredits(userDb: Collection, groupId: number) {
 	const matchQuery = $.match({ 'credits.groupId': groupId })

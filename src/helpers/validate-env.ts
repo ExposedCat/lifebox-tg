@@ -7,12 +7,11 @@ function validateEnv() {
 		'CREDITS_HIGH_PERCENT',
 		'ELO_PROBABILITY_CONST',
 		'ELO_MAX_REWARD',
-		'FREE_CREDITS_CHANCE',
-		'FREE_CREDITS_MIN',
-		'FREE_CREDITS_MAX',
-		'DECREASE_CREDITS_CHANCE',
-		'TOP_LIMIT',
-		'UNNAMED'
+		'RATING_LIMIT',
+		'UNNAMED',
+		'INITIAL_CREDITS',
+		'BAD_WORDS_DECREASE_MIN',
+		'BAD_WORDS_DECREASE_MAX'
 	]
 	for (const env of required) {
 		if (process.env[env] === undefined) {

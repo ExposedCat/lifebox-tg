@@ -9,12 +9,11 @@ export declare global {
 			CREDITS_HIGH_PERCENT: string
 			ELO_PROBABILITY_CONST: string
 			ELO_MAX_REWARD: string
-			FREE_CREDITS_CHANCE: string
-			FREE_CREDITS_MIN: string
-			FREE_CREDITS_MAX: string
-			DECREASE_CREDITS_CHANCE: string
-			TOP_LIMIT: string
+			RATING_LIMIT: string
 			UNNAMED: string
+			INITIAL_CREDITS: string
+			BAD_WORDS_DECREASE_MIN: string
+			BAD_WORDS_DECREASE_MAX: string
 		}
 	}
 }

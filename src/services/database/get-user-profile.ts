@@ -1,7 +1,7 @@
 import { User } from '../../types/index.js'
 import { Collection } from 'mongodb'
 
-import { AggregationBuilder as $ } from '../../helpers/index.js'
+import { DbQueryBuilder as $ } from '../../helpers/index.js'
 import { getAverageCredits } from '../index.js'
 import { getCreditState } from '../index.js'
 

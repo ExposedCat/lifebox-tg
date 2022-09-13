@@ -1,6 +1,6 @@
 import { MessageAction } from '../../types/index.js'
 
-import { getRandomIntByChance, getSentence } from '../../helpers/index.js'
+import { getSentence } from '../../helpers/index.js'
 import { getActionByWords } from '../../services/index.js'
 
 async function getMessageAction(
