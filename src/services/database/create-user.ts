@@ -9,15 +9,18 @@ async function createUserIfNotExists(
 	initialGroupId: number
 ) {
 	const query = { userId: id }
-	const userData = Object.assign(query, {
-		name,
-		credits: [
-			{
-				groupId: initialGroupId,
-				credits: Number(process.env.INITIAL_CREDITS)
-			}
-		]
-	})
+	const userData = Object.assign(
+		{
+			name,
+			credits: [
+				{
+					groupId: initialGroupId,
+					credits: Number(process.env.INITIAL_CREDITS)
+				}
+			]
+		},
+		query
+	)
 	await userDb.updateOne(query, $.setOnInsert(userData), $.upsert())
 }
 

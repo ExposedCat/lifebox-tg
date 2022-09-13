@@ -10,6 +10,8 @@ import { initLocaleEngine } from './index.js'
 import * as handlers from '../controllers/index.js'
 import { createReplyWithTextFunc, startSendPollJob } from '../services/index.js'
 
+import * as middlewares from '../middlewares/index.js'
+
 function extendContext(bot: Bot, database: Database) {
 	bot.use(async (ctx, next) => {
 		ctx.text = createReplyWithTextFunc(ctx)
@@ -20,15 +22,10 @@ function extendContext(bot: Bot, database: Database) {
 
 function setupMiddlewares(bot: Bot, localeEngine: I18n) {
 	bot.api.config.use(apiThrottler())
-	
+
 	bot.use(session())
-	bot.use(async (ctx, next) => {
-		if (ctx.chat) {
-			return localeEngine.middleware()(ctx, next)
-		} else {
-			return await next()
-		}
-	})
+	bot.use(middlewares.localeEngine(localeEngine))
+	bot.use(middlewares.createEntities)
 	bot.catch(error => console.error(`Bot | ${error.message}`))
 }
 
