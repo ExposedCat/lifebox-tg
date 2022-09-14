@@ -15,7 +15,7 @@ async function getProfiles(
 		$.unwind('credits'),
 		$.match({ 'credits.groupId': groupId }),
 		$.addFields({
-			__position: $.indexOfArray([ids, '$key'])
+			__position: $.indexOfArray([ids, '$userId'])
 		}),
 		$.sort({ __position: 1 }),
 		$.project({ _id: 0, credits: '$credits.credits' })
