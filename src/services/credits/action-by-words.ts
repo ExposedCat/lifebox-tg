@@ -5,8 +5,7 @@ import fs from 'fs/promises'
 import {
 	resolvePath,
 	sentenceContainsWord,
-	getBalanceChange,
-	getRandomInt
+	getBalanceChange
 } from '../../helpers/index.js'
 
 async function getActionByWords(
@@ -49,16 +48,6 @@ async function getActionByWords(
 		}
 	}
 
-	const containsBad = sentenceContainsWord(
-		sentence,
-		actionWords.bad as string[]
-	)
-	if (containsBad) {
-		result.changer = -getRandomInt(
-			Number(process.env.BAD_WORDS_DECREASE_MIN),
-			Number(process.env.BAD_WORDS_DECREASE_MAX)
-		)
-	}
 	return result
 }
 

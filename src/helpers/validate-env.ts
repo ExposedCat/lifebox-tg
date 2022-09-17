@@ -10,8 +10,8 @@ function validateEnv() {
 		'RATING_LIMIT',
 		'UNNAMED',
 		'INITIAL_CREDITS',
-		'BAD_WORDS_DECREASE_MIN',
-		'BAD_WORDS_DECREASE_MAX',
+		'REACTIONS_PROVIDER_ID',
+		'RATE_TIMEOUT_MS'
 		'REACTIONS_PROVIDER_ID'
 	]
 	for (const env of required) {
