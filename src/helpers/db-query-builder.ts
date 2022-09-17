@@ -2,6 +2,7 @@ class DbQueryBuilder {
 	private static stage(stage: string, value: unknown) {
 		return { [`$${stage}`]: value }
 	}
+	static elemMatch = this.stage.bind(null, 'elemMatch')
 	static match = this.stage.bind(null, 'match')
 	static project = this.stage.bind(null, 'project')
 	static group = this.stage.bind(null, 'group')
@@ -16,7 +17,7 @@ class DbQueryBuilder {
 	static setOnInsert = (data: object) => this.stage('setOnInsert', data)
 	static upsert = () => ({ upsert: true })
 	static push = (entity: object) => this.stage('push', entity)
-	static ne = (expression: unknown) => this.stage('ne', expression)
+	static ne = (value: unknown) => this.stage('ne', value)
 	static set = (data: object) => this.stage('set', data)
 	static inc = (field: string, value: number) =>
 		this.stage('inc', { [field]: value })

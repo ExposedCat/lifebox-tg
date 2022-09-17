@@ -4,12 +4,16 @@ import { Collection } from 'mongodb'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function getAverageCredits(userDb: Collection, groupId: number) {
-	const matchQuery = $.match({ 'credits.groupId': groupId })
 	const aggregation = userDb.aggregate<Median>([
-		matchQuery,
+		$.match({
+			credits: $.elemMatch({
+				groupId,
+				credits: $.ne(0)
+			})
+		}),
 		$.unwind('credits'),
 		$.sort({ 'credits.credits': 1 }),
-		matchQuery,
+		$.match({ 'credits.groupId': groupId }),
 		$.group({
 			_id: 'id',
 			array: { $push: '$credits.credits' }
