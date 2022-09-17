@@ -14,6 +14,7 @@ interface User {
 	userId: number
 	name: string
 	credits: number
+	lastRated: Date
 }
 
 interface Median {

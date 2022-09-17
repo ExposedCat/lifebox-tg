@@ -18,24 +18,31 @@ async function handleAction(
 	let changerProfile
 	let targetProfile
 	if (targetId) {
-		const credits = await getProfiles(userDb, changerId, targetId, groupId)
-		changerProfile = credits.changer
-		targetProfile = credits.target
+		const profiles = await getProfiles(userDb, changerId, targetId, groupId)
+		changerProfile = profiles.changer
+		targetProfile = profiles.target
+		if (!changerProfile || !targetProfile) {
+			return
+		}
 	} else {
 		const profile = await getUserProfile(userDb, changerId, groupId, false)
 		if (!profile) {
 			return
 		}
-		changerProfile = profile.user.credits
+		changerProfile = profile.user
+	}
+	if (
+		Date.now() - Number(changerProfile.lastRated) <
+		Number(process.env.RATE_TIMEOUT_MS)
+	) {
+		return
 	}
 	const { changer, target } = await getMessageAction(
 		subject,
 		changerProfile,
 		targetProfile
 	)
-	if (changer) {
-		await updateUserCredits(userDb, changerId, groupId, changer)
-	}
+	await updateUserCredits(userDb, changerId, groupId, changer)
 	if (target && targetId && targetName) {
 		await updateUserCredits(userDb, targetId, groupId, target, targetName)
 	}

@@ -13,6 +13,7 @@ export declare global {
 			UNNAMED: string
 			INITIAL_CREDITS: string
 			REACTIONS_PROVIDER_ID: string
+			RATE_TIMEOUT_MS: string
 		}
 	}
 }

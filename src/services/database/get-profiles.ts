@@ -18,15 +18,19 @@ async function getProfiles(
 			__position: $.indexOfArray([ids, '$userId'])
 		}),
 		$.sort({ __position: 1 }),
-		$.project({ _id: 0, credits: '$credits.credits' })
+		$.project({
+			_id: 0,
+			credits: '$credits.credits',
+			lastRated: '$credits.lastRated'
+		})
 	])
 
 	const changer = await profiles.next()
 	const target = await profiles.next()
 
 	return {
-		changer: changer?.credits || 0,
-		target: target?.credits || 0
+		changer: changer,
+		target: target
 	}
 }
 

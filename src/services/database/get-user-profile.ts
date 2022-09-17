@@ -15,7 +15,12 @@ async function getUserProfile(
 		$.match({ userId }),
 		$.unwind('credits'),
 		$.match({ 'credits.groupId': localGroupId }),
-		$.project({ userId: 1, name: 1, credits: '$credits.credits' })
+		$.project({
+			userId: 1,
+			name: 1,
+			credits: '$credits.credits',
+			lastRated: '$credits.lastRated'
+		})
 	])
 
 	const user = await users.next()

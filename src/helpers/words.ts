@@ -25,12 +25,13 @@ function getSentence(message: string) {
 }
 
 function sentenceContainsWord(sentence: string, actionWords: string[]) {
+	let matches = 0
 	for (const word of actionWords) {
 		if (wordPattern(word).test(sentence)) {
-			return true
+			matches++
 		}
 	}
-	return false
+	return matches
 }
 
 export { getSentence, sentenceContainsWord }

@@ -15,7 +15,8 @@ async function createUserIfNotExists(
 			credits: [
 				{
 					groupId: initialGroupId,
-					credits: Number(process.env.INITIAL_CREDITS)
+					credits: Number(process.env.INITIAL_CREDITS),
+					lastRated: new Date()
 				}
 			]
 		},

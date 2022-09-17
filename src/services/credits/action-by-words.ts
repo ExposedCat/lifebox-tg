@@ -24,28 +24,26 @@ async function getActionByWords(
 
 	const actionWords = JSON.parse(wordsFile)
 	if (target !== undefined) {
-		const containsIncrease = sentenceContainsWord(
+		const increase = sentenceContainsWord(
 			sentence,
 			actionWords.increase as string[]
 		)
-		if (containsIncrease) {
-			result.target = getBalanceChange(
-				changer,
-				target,
-				MessageAction.IncreaseCredits
-			)
-		}
-		const containsDecrease = sentenceContainsWord(
+		const decrease = sentenceContainsWord(
 			sentence,
 			actionWords.decrease as string[]
 		)
-		if (containsDecrease) {
-			result.target = getBalanceChange(
-				changer,
-				target,
-				MessageAction.DecreaseCredits
-			)
+		if (!increase && !decrease) {
+			return result
 		}
+		const total = increase + decrease
+		const main = Math.max(increase, decrease)
+		const multiplier = main / total
+		let action = MessageAction.IncreaseCredits
+		if (decrease && decrease >= increase) {
+			action = MessageAction.DecreaseCredits
+		}
+		const change = getBalanceChange(changer, target, action)
+		result.target = Math.round(change * multiplier)
 	}
 
 	return result

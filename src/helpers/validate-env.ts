@@ -12,7 +12,6 @@ function validateEnv() {
 		'INITIAL_CREDITS',
 		'REACTIONS_PROVIDER_ID',
 		'RATE_TIMEOUT_MS'
-		'REACTIONS_PROVIDER_ID'
 	]
 	for (const env of required) {
 		if (process.env[env] === undefined) {
