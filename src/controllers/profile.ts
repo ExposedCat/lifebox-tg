@@ -9,7 +9,7 @@ controller.chatType(['supergroup', 'group']).command('profile', async ctx => {
 	if (!ctx.from) {
 		return
 	}
-	const profile = await getUserProfile(ctx.db.users, ctx.from.id, ctx.chat.id)
+	const profile = await getUserProfile(ctx.db.users, ctx.from.id, ctx.chat.id, true)
 	if (!profile) {
 		await ctx.text('error.profileNotFound')
 	} else {

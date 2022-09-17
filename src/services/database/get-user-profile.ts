@@ -8,9 +8,9 @@ import { getCreditState } from '../index.js'
 async function getUserProfile(
 	userDb: Collection,
 	userId: number,
-	localGroupId: number
+	localGroupId: number,
+	calcState: boolean
 ) {
-	const averageCredits = await getAverageCredits(userDb, localGroupId)
 	const users = userDb.aggregate<User>([
 		$.match({ userId }),
 		$.unwind('credits'),
@@ -23,7 +23,12 @@ async function getUserProfile(
 		return null
 	}
 
-	const state = getCreditState(user.credits, averageCredits)
+	let state: string | null = null
+	let averageCredits: number | null = null
+	if (calcState) {
+		averageCredits = await getAverageCredits(userDb, localGroupId)
+		state = getCreditState(user.credits, averageCredits)
+	}
 
 	return { user, averageCredits, state }
 }

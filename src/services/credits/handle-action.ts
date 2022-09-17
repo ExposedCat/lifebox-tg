@@ -22,7 +22,7 @@ async function handleAction(
 		changerProfile = credits.changer
 		targetProfile = credits.target
 	} else {
-		const profile = await getUserProfile(userDb, changerId, groupId)
+		const profile = await getUserProfile(userDb, changerId, groupId, false)
 		if (!profile) {
 			return
 		}
