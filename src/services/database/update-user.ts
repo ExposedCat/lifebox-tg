@@ -1,15 +1,36 @@
-import { Collection } from 'mongodb'
-
+import { Database } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
+// async function updateUserDayRate(
+// 	userDb: Collection,
+// 	id: number,
+// 	pollId: string,
+// 	change: number
+// ) {
+// 	let operation = userDb.initializeOrderedBulkOp()
+
+// 	// Create user local data if not exists
+// 	operation
+// 		.find({
+// 			userId: id
+// 		})
+// 		.upsert()
+// 		.updateOne({
+// 			$setOnInsert: {
+// 				credits: [],
+// 				dayRates: []
+// 			}
+// 		})
+// }
+
 async function updateUserCredits(
-	userDb: Collection,
+	database: Database['users'],
 	id: number,
 	groupId: number,
 	change: number,
 	name?: string
 ) {
-	let operation = userDb.initializeOrderedBulkOp()
+	let operation = database.initializeOrderedBulkOp()
 
 	// Create user local data if not exists
 	operation

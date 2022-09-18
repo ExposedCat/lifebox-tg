@@ -1,8 +1,4 @@
-enum CreditState {
-	Low = 'lowCredits',
-	Normal = 'normalCredits',
-	High = 'highCredits'
-}
+import { CreditState } from '../../types/index.js'
 
 function getCreditState(credits: number, averageCredits: number) {
 	let state = CreditState.Normal

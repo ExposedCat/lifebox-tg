@@ -1,24 +1,38 @@
-import { ObjectId, Collection } from 'mongodb'
+import { Collection } from 'mongodb'
 
 interface Group {
-	_id: ObjectId
 	groupId: number
-}
-
-interface Database {
-	users: Collection
-	groups: Collection
 }
 
 interface User {
 	userId: number
-	name: string
+	name: string | undefined
+	credits: {
+		groupId: number
+		credits: number
+	}[]
+	lastRated: Date
+}
+
+enum CreditState {
+	Low = 'lowCredits',
+	Normal = 'normalCredits',
+	High = 'highCredits'
+}
+
+interface UserProfile {
+	name?: string
 	credits: number
 	lastRated: Date
+}
+
+interface Database {
+	users: Collection<User>
+	groups: Collection<Group>
 }
 
 interface Median {
 	median: number
 }
 
-export { User, Median, Group, Database }
+export { Group, User, UserProfile, Database, CreditState, Median }

@@ -1,5 +1,4 @@
-import { Group, TelegramApiError } from '../../types/index.js'
-import { Collection } from 'mongodb'
+import { Database, Group, TelegramApiError } from '../../types/index.js'
 import { Api, GrammyError } from 'grammy'
 import { I18n } from '@grammyjs/i18n/dist/source'
 
@@ -34,9 +33,9 @@ function chatNotFoundError(object: unknown) {
 	}
 }
 
-async function startSendPollJob(api: Api, i18n: I18n, groupsDb: Collection) {
+async function startSendPollJob(api: Api, i18n: I18n, database: Database['groups']) {
 	return cron.scheduleJob(process.env.POLL_TIME, async () => {
-		const groups = fetchGroups(groupsDb)
+		const groups = fetchGroups(database)
 
 		let firstGroup: Group | null = null
 		let pollId: number | null = null

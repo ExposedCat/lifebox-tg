@@ -1,11 +1,11 @@
-import { Collection } from 'mongodb'
+import { Database } from '../../types/index.js'
 
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function createUserIfNotExists(
-	userDb: Collection,
+	database: Database['users'],
 	id: number,
-	name: string,
+	name: string | undefined,
 	initialGroupId: number
 ) {
 	const query = { userId: id }
@@ -22,7 +22,7 @@ async function createUserIfNotExists(
 		},
 		query
 	)
-	await userDb.updateOne(query, $.setOnInsert(userData), $.upsert())
+	await database.updateOne(query, $.setOnInsert(userData), $.upsert())
 }
 
 export { createUserIfNotExists }

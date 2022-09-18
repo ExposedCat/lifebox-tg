@@ -2,7 +2,7 @@ import { CustomContext } from '../types/index.js'
 
 import { Composer } from 'grammy'
 
-import { handleAction } from '../services/index.js'
+import { createUserIfNotExists, handleAction } from '../services/index.js'
 
 const controller = new Composer<CustomContext>()
 controller
@@ -12,6 +12,18 @@ controller
 			return
 		}
 		const [_, groupId, userId, targetId, targetName, reaction] = ctx.match
+		await createUserIfNotExists(
+			ctx.db.users,
+			Number(userId),
+			undefined,
+			Number(groupId)
+		)
+		await createUserIfNotExists(
+			ctx.db.users,
+			Number(targetId),
+			targetName,
+			Number(groupId)
+		)
 		await handleAction(
 			ctx.db.users,
 			reaction,

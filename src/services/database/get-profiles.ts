@@ -1,16 +1,15 @@
-import { User } from '../../types/index.js'
-import { Collection } from 'mongodb'
+import { Database, UserProfile } from '../../types/index.js'
 
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function getProfiles(
-	userDb: Collection,
+	database: Database['users'],
 	changerId: number,
 	targetId: number,
 	groupId: number
 ) {
 	const ids = [changerId, targetId]
-	const profiles = userDb.aggregate<User>([
+	const profiles = database.aggregate<UserProfile>([
 		$.match({ userId: $.in(ids) }),
 		$.unwind('credits'),
 		$.match({ 'credits.groupId': groupId }),
@@ -20,6 +19,7 @@ async function getProfiles(
 		$.sort({ __position: 1 }),
 		$.project({
 			_id: 0,
+			name: 1,
 			credits: '$credits.credits',
 			lastRated: '$credits.lastRated'
 		})

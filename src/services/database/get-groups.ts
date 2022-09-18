@@ -1,8 +1,7 @@
-import { Group } from '../../types/index.js'
-import { Collection } from 'mongodb'
+import { Database, Group } from '../../types/index.js'
 
-function fetchGroups(groupsDb: Collection) {
-	return groupsDb.find<Group>({})
+function fetchGroups(database: Database['groups']) {
+	return database.find<Group>({})
 }
 
 export { fetchGroups }

@@ -1,11 +1,14 @@
-import { Collection } from 'mongodb'
+import { Database } from '../../types/index.js'
 
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
-async function createGroupIfNotExists(groupDb: Collection, groupId: number) {
+async function createGroupIfNotExists(
+	database: Database['groups'],
+	groupId: number
+) {
 	const query = { groupId }
 	const groupData = query
-	await groupDb.updateOne(query, $.setOnInsert(groupData), $.upsert())
+	await database.updateOne(query, $.setOnInsert(groupData), $.upsert())
 }
 
 export { createGroupIfNotExists }

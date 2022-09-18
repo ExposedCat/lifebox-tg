@@ -1,22 +1,19 @@
-import { User } from '../../types/index.js'
-import { Collection } from 'mongodb'
+import { Database, UserProfile } from '../../types/index.js'
 
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
-import { getAverageCredits } from '../index.js'
-import { getCreditState } from '../index.js'
+import { getAverageCredits, getCreditState } from '../index.js'
 
 async function getUserProfile(
-	userDb: Collection,
+	database: Database['users'],
 	userId: number,
 	localGroupId: number,
 	calcState: boolean
 ) {
-	const users = userDb.aggregate<User>([
+	const users = database.aggregate<UserProfile>([
 		$.match({ userId }),
 		$.unwind('credits'),
 		$.match({ 'credits.groupId': localGroupId }),
 		$.project({
-			userId: 1,
 			name: 1,
 			credits: '$credits.credits',
 			lastRated: '$credits.lastRated'
@@ -31,7 +28,7 @@ async function getUserProfile(
 	let state: string | null = null
 	let averageCredits: number | null = null
 	if (calcState) {
-		averageCredits = await getAverageCredits(userDb, localGroupId)
+		averageCredits = await getAverageCredits(database, localGroupId)
 		state = getCreditState(user.credits, averageCredits)
 	}
 

@@ -1,11 +1,10 @@
-import { User } from '../../types/index.js'
-import { Collection } from 'mongodb'
+import { Database, UserProfile } from '../../types/index.js'
 
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
-async function getTopSocialUsers(userDb: Collection, groupId: number) {
+async function getTopSocialUsers(database: Database['users'], groupId: number) {
 	const matchQuery = $.match({ 'credits.groupId': groupId })
-	const aggregation = userDb.aggregate<User>([
+	const aggregation = database.aggregate<UserProfile>([
 		matchQuery,
 		$.unwind('credits'),
 		matchQuery,
@@ -13,9 +12,9 @@ async function getTopSocialUsers(userDb: Collection, groupId: number) {
 		$.sort({ 'credits.credits': -1 }),
 		$.project({
 			_id: 0,
-			userId: 1,
 			name: 1,
-			credits: '$credits.credits'
+			credits: '$credits.credits',
+			lastRated: '$credits.lastRated'
 		})
 	])
 

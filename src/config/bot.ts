@@ -31,6 +31,7 @@ function setupMiddlewares(bot: Bot, localeEngine: I18n) {
 
 function setupControllers(bot: Bot) {
 	bot.use(handlers.botAdded)
+	bot.use(handlers.rateDate)
 	bot.use(handlers.reactions)
 	bot.use(handlers.start)
 	bot.use(handlers.profile)
