@@ -11,10 +11,18 @@ async function getUserProfile(
 ) {
 	const users = database.aggregate<UserProfile>([
 		$.match({ userId }),
+		$.project({
+			name: 1,
+			credits: 1,
+			lifeQuality: {
+				$round: [{ $avg: '$dayRates.value' }, 1]
+			}
+		}),
 		$.unwind('credits'),
 		$.match({ 'credits.groupId': localGroupId }),
 		$.project({
 			name: 1,
+			lifeQuality: 1,
 			credits: '$credits.credits',
 			lastRated: '$credits.lastRated'
 		})

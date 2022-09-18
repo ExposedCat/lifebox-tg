@@ -1,28 +1,20 @@
 import { Database } from '../../types/index.js'
 
-import { DbQueryBuilder as $ } from '../../helpers/index.js'
+import { updateUserCredits } from './update-user.js'
 
 async function createUserIfNotExists(
 	database: Database['users'],
 	id: number,
-	name: string | undefined,
+	name: string,
 	initialGroupId: number
 ) {
-	const query = { userId: id }
-	const userData = Object.assign(
-		{
-			name,
-			credits: [
-				{
-					groupId: initialGroupId,
-					credits: Number(process.env.INITIAL_CREDITS),
-					lastRated: new Date()
-				}
-			]
-		},
-		query
+	await updateUserCredits(
+		database,
+		id,
+		initialGroupId,
+		Number(process.env.INITIAL_CREDITS),
+		name
 	)
-	await database.updateOne(query, $.setOnInsert(userData), $.upsert())
 }
 
 export { createUserIfNotExists }

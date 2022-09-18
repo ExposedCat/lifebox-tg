@@ -1,27 +1,57 @@
 import { Database } from '../../types/index.js'
+import { OrderedBulkOperation } from 'mongodb'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
-// async function updateUserDayRate(
-// 	userDb: Collection,
-// 	id: number,
-// 	pollId: string,
-// 	change: number
-// ) {
-// 	let operation = userDb.initializeOrderedBulkOp()
+function addUserCreationStage(operation: OrderedBulkOperation, userId: number) {
+	operation
+		.find({ userId })
+		.upsert()
+		.updateOne({
+			$setOnInsert: {
+				credits: [],
+				dayRates: []
+			}
+		})
+}
 
-// 	// Create user local data if not exists
-// 	operation
-// 		.find({
-// 			userId: id
-// 		})
-// 		.upsert()
-// 		.updateOne({
-// 			$setOnInsert: {
-// 				credits: [],
-// 				dayRates: []
-// 			}
-// 		})
-// }
+async function updateUserDayRate(
+	database: Database['users'],
+	id: number,
+	pollId: string,
+	value: number
+) {
+	let operation = database.initializeOrderedBulkOp()
+
+	// Create user if not exists
+	addUserCreationStage(operation, id)
+
+	// Create user local data if not exists
+	operation
+		.find({
+			userId: id,
+			'dayRates.pollId': $.ne(pollId)
+		})
+		.updateOne(
+			$.push({
+				dayRates: { pollId }
+			})
+		)
+
+	// Update credits & name if specified
+	operation
+		.find({
+			userId: id,
+			'dayRates.pollId': pollId
+		})
+		.updateOne(
+			$.set({
+				'dayRates.$.value': value,
+				'dayRates.$.date': new Date()
+			})
+		)
+
+	await operation.execute()
+}
 
 async function updateUserCredits(
 	database: Database['users'],
@@ -31,6 +61,9 @@ async function updateUserCredits(
 	name?: string
 ) {
 	let operation = database.initializeOrderedBulkOp()
+
+	// Create user if not exists
+	addUserCreationStage(operation, id)
 
 	// Create user local data if not exists
 	operation
@@ -49,9 +82,11 @@ async function updateUserCredits(
 
 	// Update credits & name if specified
 	let update = {
-		...(name && $.set({ name })),
 		...$.inc('credits.$.credits', change),
-		...$.set({ 'credits.$.lastRated': new Date() })
+		...$.set({
+			...(name && { name }),
+			'credits.$.lastRated': new Date()
+		})
 	}
 	operation
 		.find({
@@ -63,4 +98,4 @@ async function updateUserCredits(
 	await operation.execute()
 }
 
-export { updateUserCredits }
+export { updateUserCredits, updateUserDayRate }

@@ -17,7 +17,8 @@ controller.chatType(['supergroup', 'group']).command('profile', async ctx => {
 			name: profile.user.name || process.env.UNNAMED,
 			credits: profile.user.credits,
 			average: profile.averageCredits,
-			icon: ctx.i18n.t(`partial.icon.${profile.state}`)
+			icon: ctx.i18n.t(`partial.icon.${profile.state}`),
+			lifeQuality: profile.user.lifeQuality
 		})
 	}
 })

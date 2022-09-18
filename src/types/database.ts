@@ -11,6 +11,11 @@ interface User {
 		groupId: number
 		credits: number
 	}[]
+	dayRates: {
+		pollId: number
+		date: Date
+		value: number
+	}[]
 	lastRated: Date
 }
 
@@ -24,6 +29,7 @@ interface UserProfile {
 	name?: string
 	credits: number
 	lastRated: Date
+	lifeQuality: Date
 }
 
 interface Database {
