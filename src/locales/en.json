@@ -3,7 +3,7 @@
         "started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
     },
     "fetch": {
-        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality}\nAverage: ${averageLifeQuality} 点",
+        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
         "rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
     },
     "partial": {
