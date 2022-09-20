@@ -1,13 +1,17 @@
 import { Database, UserProfile } from '../../types/index.js'
 
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
-import { getAverageCredits, getCreditState } from '../index.js'
+import {
+	getAverageCredits,
+	getAverageLifeQuality,
+	getValueState
+} from '../index.js'
 
 async function getUserProfile(
 	database: Database['users'],
 	userId: number,
 	localGroupId: number,
-	calcState: boolean
+	calcAverage: boolean
 ) {
 	const users = database.aggregate<UserProfile>([
 		$.match({ userId }),
@@ -35,12 +39,14 @@ async function getUserProfile(
 
 	let state: string | null = null
 	let averageCredits: number | null = null
-	if (calcState) {
+	let averageLifeQuality: number | null = null
+	if (calcAverage) {
+		averageLifeQuality = await getAverageLifeQuality(database, localGroupId)
 		averageCredits = await getAverageCredits(database, localGroupId)
-		state = getCreditState(user.credits, averageCredits)
+		state = getValueState(user.credits, averageCredits)
 	}
 
-	return { user, averageCredits, state }
+	return { user, averageCredits, averageLifeQuality, state }
 }
 
 export { getUserProfile }

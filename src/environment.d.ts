@@ -5,8 +5,8 @@ export declare global {
 			DB_CONNECTION_STRING: string
 			POLL_TIME: string
 			POLL_LANG: string
-			CREDITS_SMALL_PERCENT: string
-			CREDITS_HIGH_PERCENT: string
+			VALUE_SMALL_PERCENT: string
+			VALUE_HIGH_PERCENT: string
 			ELO_PROBABILITY_CONST: string
 			ELO_MAX_REWARD: string
 			RATING_LIMIT: string

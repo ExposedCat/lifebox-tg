@@ -12,6 +12,7 @@ async function getProfiles(
 	const profiles = database.aggregate<UserProfile>([
 		$.match({ userId: $.in(ids) }),
 		$.project({
+			userId: 1,
 			name: 1,
 			credits: 1,
 			lifeQuality: {
@@ -23,7 +24,7 @@ async function getProfiles(
 		$.addFields({
 			__position: $.indexOfArray([ids, '$userId'])
 		}),
-		$.sort({ __position: 1 }),
+		$.sort('__position', 1),
 		$.project({
 			_id: 0,
 			name: 1,

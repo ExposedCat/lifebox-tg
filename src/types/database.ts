@@ -19,17 +19,22 @@ interface User {
 	lastRated: Date
 }
 
-enum CreditState {
-	Low = 'lowCredits',
-	Normal = 'normalCredits',
-	High = 'highCredits'
+enum ValueState {
+	Low = 'low',
+	Normal = 'normal',
+	High = 'high'
 }
 
 interface UserProfile {
 	name?: string
 	credits: number
+	lifeQuality: number
 	lastRated: Date
-	lifeQuality: Date
+}
+
+interface UserLifeQuality {
+	name?: string
+	lifeQuality: number
 }
 
 interface Database {
@@ -37,8 +42,4 @@ interface Database {
 	groups: Collection<Group>
 }
 
-interface Median {
-	median: number
-}
-
-export { Group, User, UserProfile, Database, CreditState, Median }
+export { Group, User, UserProfile, UserLifeQuality, Database, ValueState }

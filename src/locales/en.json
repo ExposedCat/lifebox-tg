@@ -3,16 +3,20 @@
         "started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
     },
     "fetch": {
-        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${average} 会\nLife quality: ${lifeQuality}/2 点",
-        "socialRating": "社会评价体系\n\n${userList}\nAverage: ${average} 会"
+        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality}\nAverage: ${averageLifeQuality} 点",
+        "rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
     },
     "partial": {
         "icon": {
-            "lowCredits": "🈵",
-            "normalCredits": "🈶",
-            "highCredits": "🈯️"
+            "low": "🈵",
+            "normal": "🈶",
+            "high": "🈯️"
         },
-        "userLine": "${position}. ${name} - ${credits} 会 ${icon}\n"
+        "label": {
+            "credits": "会",
+            "lifeQuality": "点"
+        },
+        "userLine": "${position}. ${name} - ${value} ${label} ${icon}\n"
     },
     "poll": {
         "question": "Rate today",
@@ -26,6 +30,6 @@
     },
     "error": {
         "profileNotFound": "E: Profile not found\nMaybe try to send any non-command message?",
-        "usersNotFound": "E: Users not found for this group\nMaybe try to send any non-command message?"
+        "usersNotFound": "E: People data not found for this group\nMaybe try to send any non-command message?\nMaybe everyone has 0 credits?"
     }
 }

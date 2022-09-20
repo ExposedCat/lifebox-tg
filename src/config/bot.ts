@@ -35,6 +35,7 @@ function setupControllers(bot: Bot) {
 	bot.use(handlers.reactions)
 	bot.use(handlers.start)
 	bot.use(handlers.profile)
+	bot.use(handlers.lifeQuality)
 	bot.use(handlers.social)
 	bot.use(handlers.groupTextMessage)
 }

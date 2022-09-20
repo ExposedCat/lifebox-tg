@@ -5,8 +5,8 @@ export {
 	User,
 	UserProfile,
 	Database,
-	Median,
-	CreditState
+	ValueState,
+	UserLifeQuality
 } from './database.js'
 export { MessageAction } from './messages.js'
 export { TelegramApiError } from './errors.js'
