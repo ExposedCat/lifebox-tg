@@ -19,7 +19,7 @@ controller
 			await ctx.text('error.usersNotFound')
 		} else {
 			let userList = ''
-			const label = ctx.i18n.t('partial.label.credits')
+			const label = ctx.i18n.t('partial.label.lifeQuality')
 			for (let i = 0; i < list.length; ++i) {
 				const user = list[i]
 				const state = getValueState(user.lifeQuality, average)
