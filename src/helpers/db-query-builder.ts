@@ -34,7 +34,7 @@ class DbQueryBuilder {
 		subtractive: number | string | object
 	) => this.stage('subtract', [diminutive, subtractive])
 	static sum = this.stage.bind(null, 'sum')
-	static avg = (arrayPath: string) => this.stage('sum', `$${arrayPath}`)
+	static avg = (arrayPath: string) => this.stage('avg', `$${arrayPath}`)
 	static divide = (dividend: unknown, divisor: unknown) =>
 		this.stage('divide', [dividend, divisor])
 	static inc = (field: string, value: number) =>
