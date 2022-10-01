@@ -14,6 +14,7 @@ export declare global {
 			INITIAL_CREDITS: string
 			REACTIONS_PROVIDER_ID: string
 			RATE_TIMEOUT_MS: string
+			ADMIN_ID: string
 		}
 	}
 }

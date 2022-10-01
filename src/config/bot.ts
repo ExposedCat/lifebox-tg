@@ -29,10 +29,11 @@ function setupMiddlewares(bot: Bot, localeEngine: I18n) {
 	bot.catch(error => console.error(`Bot | ${error.message}`))
 }
 
-function setupControllers(bot: Bot) {
+function setupControllers(bot: Bot,i18n: I18n) {
 	bot.use(handlers.botAdded)
 	bot.use(handlers.rateDate)
 	bot.use(handlers.reactions)
+	bot.use(handlers.sendPollForceController(i18n))
 	bot.use(handlers.start)
 	bot.use(handlers.profile)
 	bot.use(handlers.lifeQuality)
@@ -46,7 +47,7 @@ async function startBot(database: Database) {
 	const bot = new TelegramBot<CustomContext>(process.env.TOKEN)
 	extendContext(bot, database)
 	setupMiddlewares(bot, i18n)
-	setupControllers(bot)
+	setupControllers(bot, i18n)
 	bot.start()
 	startSendPollJob(bot.api, i18n, database.groups)
 }
