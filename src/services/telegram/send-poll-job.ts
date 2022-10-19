@@ -30,7 +30,9 @@ function chatNotFoundError(object: unknown) {
 	const error = object as GrammyError
 	if (error.description !== TelegramApiError.CHAT_NOT_FOUND) {
 		console.error(`Job | Can't post poll: `, error)
+		return false
 	}
+	return true
 }
 
 // TODO: Move to the service
@@ -61,14 +63,21 @@ async function populatePoll(
 	while (await groups.hasNext()) {
 		const group = await groups.next()
 		if (group) {
-			try {
-				await api.forwardMessage(
-					group.groupId,
-					firstGroup.groupId,
-					pollId
-				)
-			} catch (object) {
-				chatNotFoundError(object)
+			let tries = 5
+			let repeat = false
+			do {
+				try {
+					await api.forwardMessage(
+						group.groupId,
+						firstGroup.groupId,
+						pollId
+					)
+				} catch (object) {
+					repeat = chatNotFoundError(object)
+				}
+			} while (repeat && tries--)
+			if (!tries) {
+				console.error(`Job | Can't post poll: Telegram API fucked up`)
 			}
 		}
 	}
