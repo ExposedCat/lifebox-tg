@@ -13,7 +13,9 @@ async function createUserIfNotExists(
 		id,
 		initialGroupId,
 		Number(process.env.INITIAL_CREDITS),
-		name
+		name,
+		true,
+		true
 	)
 }
 

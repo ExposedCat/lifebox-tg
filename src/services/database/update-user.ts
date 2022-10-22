@@ -58,7 +58,9 @@ async function updateUserCredits(
 	id: number,
 	groupId: number,
 	change: number,
-	name?: string
+	name?: string,
+	create = false,
+	changed = false
 ) {
 	let operation = database.initializeOrderedBulkOp()
 
@@ -85,7 +87,7 @@ async function updateUserCredits(
 		...$.inc('credits.$.credits', change),
 		...$.set({
 			...(name && { name }),
-			'credits.$.lastRated': new Date()
+			...(!create && changed && { 'credits.$.lastRated': new Date() })
 		})
 	}
 	operation

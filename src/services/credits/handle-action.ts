@@ -52,7 +52,7 @@ async function handleAction(
 		changerProfile,
 		targetProfile
 	)
-	await updateUserCredits(database, changerId, groupId, changer)
+	await updateUserCredits(database, changerId, groupId, changer, undefined, false, target !== 0)
 	if (target && targetId && targetName) {
 		await updateUserCredits(database, targetId, groupId, target, targetName)
 	}
