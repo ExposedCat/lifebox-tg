@@ -4,7 +4,8 @@
     },
     "fetch": {
         "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
-        "rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
+        "rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}",
+        "user_history": "一天的成績歷史\n\n${ratesList}"
     },
     "partial": {
         "icon": {
@@ -16,7 +17,8 @@
             "credits": "会",
             "lifeQuality": "点"
         },
-        "userLine": "${position}. ${name} - ${value} ${label} ${icon}\n"
+        "userLine": "${position}. ${name} - ${value} ${label} ${icon}\n",
+        "userHistoryLine": "${rate}\n"
     },
     "poll": {
         "question": "Rate today",

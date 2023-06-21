@@ -29,13 +29,14 @@ function setupMiddlewares(bot: Bot, localeEngine: I18n) {
 	bot.catch(error => console.error(`Bot | ${error.message}`))
 }
 
-function setupControllers(bot: Bot,i18n: I18n) {
+function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.botAdded)
 	bot.use(handlers.rateDate)
 	bot.use(handlers.reactions)
 	bot.use(handlers.sendPollForceController(i18n))
 	bot.use(handlers.start)
 	bot.use(handlers.profile)
+	bot.use(handlers.history)
 	bot.use(handlers.lifeQuality)
 	bot.use(handlers.social)
 	bot.use(handlers.groupTextMessage)
