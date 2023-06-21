@@ -83,12 +83,14 @@ async function updateUserCredits(
 		)
 
 	// Update credits & name if specified
+	const hasSet = name && !create && changed
 	let update = {
 		...$.inc('credits.$.credits', change),
-		...$.set({
-			...(name && { name }),
-			...(!create && changed && { 'credits.$.lastRated': new Date() })
-		})
+		...(hasSet &&
+			$.set({
+				...(name && { name }),
+				...(!create && changed && { 'credits.$.lastRated': new Date() })
+			}))
 	}
 	operation
 		.find({
