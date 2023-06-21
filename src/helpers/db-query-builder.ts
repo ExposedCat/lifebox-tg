@@ -15,7 +15,7 @@ class DbQueryBuilder {
 	static set = (data: object) => this.stage('set', data)
 	// Arrays
 	static elemMatch = this.stage.bind(null, 'elemMatch')
-	static sort = (arrayName: string, order: number) =>
+	static sort = (arrayName: string, order = 1) =>
 		this.stage('sort', { [arrayName]: order })
 	static unwind = (field: string) => this.stage('unwind', `$${field}`)
 	static size = (arrayName: string) => this.stage('size', arrayName)
@@ -25,6 +25,15 @@ class DbQueryBuilder {
 	static push = (entity: unknown) => this.stage('push', entity)
 	static slice = (arrayPath: string, elementsNumber: number) =>
 		this.stage('slice', [`$${arrayPath}`, elementsNumber])
+	static nestedSort = (arrayName: string, field: string, order = 1) =>
+		this.stage('addFields', {
+			[arrayName]: this.stage('sortArray', {
+				input: `$${arrayName}`,
+				sortBy: {
+					[field]: order
+				}
+			})
+		})
 	// Math
 	static round = (value: unknown, place: number) =>
 		this.stage('round', [value, place])
@@ -35,6 +44,7 @@ class DbQueryBuilder {
 	) => this.stage('subtract', [diminutive, subtractive])
 	static sum = this.stage.bind(null, 'sum')
 	static avg = (arrayPath: string) => this.stage('avg', `$${arrayPath}`)
+	static gte = (value: unknown) => this.stage('gte', value)
 	static divide = (dividend: unknown, divisor: unknown) =>
 		this.stage('divide', [dividend, divisor])
 	static inc = (field: string, value: number) =>
