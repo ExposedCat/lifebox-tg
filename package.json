@@ -29,9 +29,11 @@
   "dependencies": {
     "@grammyjs/i18n": "^0.5.1",
     "@grammyjs/transformer-throttler": "^1.1.2",
+    "chartjs-to-image": "^1.2.1",
     "dotenv": "^16.0.1",
     "grammy": "^1.10.1",
-    "mongodb": "^4.9.1",
+    "mongodb": "^5.6.0",
+    "node-fetch": "^3.3.1",
     "node-schedule": "^2.1.0"
   },
   "devDependencies": {
