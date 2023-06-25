@@ -26,15 +26,11 @@ async function fetchUserRatesGraph(
 			$.match({ userId }),
 			$.nestedSort('dayRates', 'date'),
 			$.addFields({
-				dayRates: {
-					$filter: {
-						input: '$dayRates',
-						as: 'dayRate',
-						cond: {
-							$gte: ['$$dayRate.date', maxRates]
-						}
-					}
-				}
+				dayRates: $.filter(
+					'dayRates',
+					'dayRate',
+					$.cond.gte('dayRate.path', maxRates)
+				)
 			})
 		])
 		.toArray()
@@ -42,6 +38,9 @@ async function fetchUserRatesGraph(
 	const average = await database
 		.aggregate<Point>([
 			$.unwind('dayRates'),
+			$.match({
+				'dayRates.date': $.in(user.dayRates.map(it => it.date))
+			}),
 			$.group({
 				_id: '$dayRates.date',
 				value: $.avg('dayRates.value')
@@ -53,7 +52,8 @@ async function fetchUserRatesGraph(
 				_id: 0,
 				date: '$_id',
 				value: 1
-			})
+			}),
+			$.sort('date')
 		])
 		.toArray()
 
@@ -67,13 +67,11 @@ async function fetchUserRatesGraph(
 	const mapToAverage = (data: Point[]) =>
 		data.map((it, i) => ({
 			date: it.date,
-			value: valuesAverage(
-				data.slice(forceNonNegative(i - step), i + 1)
-			)
+			value: valuesAverage(data.slice(forceNonNegative(i - step), i + 1))
 		}))
 
-	const userPoints: Point[] = mapToAverage(user.dayRates);
-	const averagePoints: Point[] = mapToAverage(average);
+	const userPoints: Point[] = mapToAverage(user.dayRates)
+	const averagePoints: Point[] = mapToAverage(average)
 
 	return { userPoints, averagePoints }
 }

@@ -14,6 +14,16 @@ class DbQueryBuilder {
 	static ne = (value: unknown) => this.stage('ne', value)
 	static set = (data: object) => this.stage('set', data)
 	// Arrays
+	static filter = (
+		arrayPath: string,
+		iterator: string,
+		condition: Record<string, any>
+	) =>
+		this.stage('filter', {
+			input: `$${arrayPath}`,
+			as: iterator,
+			cond: condition
+		})
 	static elemMatch = this.stage.bind(null, 'elemMatch')
 	static sort = (arrayName: string, order = 1) =>
 		this.stage('sort', { [arrayName]: order })
@@ -29,9 +39,7 @@ class DbQueryBuilder {
 		this.stage('addFields', {
 			[arrayName]: this.stage('sortArray', {
 				input: `$${arrayName}`,
-				sortBy: {
-					[field]: order
-				}
+				sortBy: { [field]: order }
 			})
 		})
 	// Math
@@ -49,6 +57,11 @@ class DbQueryBuilder {
 		this.stage('divide', [dividend, divisor])
 	static inc = (field: string, value: number) =>
 		this.stage('inc', { [field]: value })
+	static cond = {
+		gte: (path: string, value: unknown) => ({
+			$gte: [`$$${path}`, value]
+		})
+	}
 }
 
 export { DbQueryBuilder }
