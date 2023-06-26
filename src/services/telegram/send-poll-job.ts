@@ -28,7 +28,7 @@ async function sendPoll(api: Api, i18n: I18n, group: Group) {
 function chatNotFoundError(object: unknown) {
 	const error = object as GrammyError
 	if (error.description !== TelegramApiError.CHAT_NOT_FOUND) {
-		console.error(`Job | Can't post poll: `, error)
+		console.warn(`Job | Can't post poll: `, error.description)
 		return false
 	}
 	return true
