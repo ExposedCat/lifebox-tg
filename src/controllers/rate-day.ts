@@ -10,7 +10,8 @@ controller.on('poll_answer', async ctx => {
 		const userId = ctx.pollAnswer.user.id
 		const option = ctx.pollAnswer.option_ids[0]
 		const value = [2, 1, 0, -1, -2][option]
-		await updateUserDayRate(ctx.db.users, userId, pollId, value)
+		const date = new Date(new Date().toDateString())
+		await updateUserDayRate(ctx.db.users, userId, pollId, value, date)
 	}
 })
 

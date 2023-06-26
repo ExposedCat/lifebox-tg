@@ -18,7 +18,8 @@ async function updateUserDayRate(
 	database: Database['users'],
 	id: number,
 	pollId: string,
-	value: number
+	value: number,
+	date: Date
 ) {
 	let operation = database.initializeOrderedBulkOp()
 
@@ -46,7 +47,7 @@ async function updateUserDayRate(
 		.updateOne(
 			$.set({
 				'dayRates.$.value': value,
-				'dayRates.$.date': new Date()
+				'dayRates.$.date': date
 			})
 		)
 
