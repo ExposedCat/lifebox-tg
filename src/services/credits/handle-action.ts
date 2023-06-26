@@ -18,24 +18,14 @@ async function handleAction(
 	let changerProfile
 	let targetProfile
 	if (targetId) {
-		const profiles = await getProfiles(
-			database,
-			changerId,
-			targetId,
-			groupId
-		)
+		const profiles = await getProfiles(database, changerId, targetId, groupId)
 		changerProfile = profiles.changer
 		targetProfile = profiles.target
 		if (!changerProfile || !targetProfile) {
 			return
 		}
 	} else {
-		const profile = await getUserProfile(
-			database,
-			changerId,
-			groupId,
-			false
-		)
+		const profile = await getUserProfile(database, changerId, groupId, false)
 		if (!profile) {
 			return
 		}
@@ -52,7 +42,15 @@ async function handleAction(
 		changerProfile,
 		targetProfile
 	)
-	await updateUserCredits(database, changerId, groupId, changer, undefined, false, target !== 0)
+	await updateUserCredits(
+		database,
+		changerId,
+		groupId,
+		changer,
+		undefined,
+		false,
+		target !== 0
+	)
 	if (target && targetId && targetName) {
 		await updateUserCredits(database, targetId, groupId, target, targetName)
 	}

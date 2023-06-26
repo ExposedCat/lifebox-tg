@@ -1,37 +1,37 @@
 {
-    "state": {
-        "started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
-    },
-    "fetch": {
-        "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
-        "rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}",
-        "user_history": "一天的成績歷史\n\n${ratesList}"
-    },
-    "partial": {
-        "icon": {
-            "low": "🈵",
-            "normal": "🈶",
-            "high": "🈯️"
-        },
-        "label": {
-            "credits": "会",
-            "lifeQuality": "点"
-        },
-        "userLine": "${position}. ${name} - ${value} ${label} ${icon}\n",
-        "userHistoryLine": "${rate}\n"
-    },
-    "poll": {
-        "question": "Rate today",
-        "option": {
-            "perfect": "+2 (perfect)",
-            "one": "+1",
-            "neutral": "0 (neutral)",
-            "minusOne": "-1",
-            "awful": "-2 (awful)"
-        }
-    },
-    "error": {
-        "profileNotFound": "E: Profile not found\nMaybe try to send any non-command message?",
-        "usersNotFound": "E: People data not found for this group\nMaybe try to send any non-command message?\nMaybe everyone has 0 credits?"
-    }
+	"state": {
+		"started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
+	},
+	"fetch": {
+		"profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
+		"rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}",
+		"user_history": "一天的成績歷史\n\n${ratesList}"
+	},
+	"partial": {
+		"icon": {
+			"low": "🈵",
+			"normal": "🈶",
+			"high": "🈯️"
+		},
+		"label": {
+			"credits": "会",
+			"lifeQuality": "点"
+		},
+		"userLine": "${position}. ${name} - ${value} ${label} ${icon}\n",
+		"userHistoryLine": "${rate}\n"
+	},
+	"poll": {
+		"question": "Rate today",
+		"option": {
+			"perfect": "+2 (perfect)",
+			"one": "+1",
+			"neutral": "0 (neutral)",
+			"minusOne": "-1",
+			"awful": "-2 (awful)"
+		}
+	},
+	"error": {
+		"profileNotFound": "E: Profile not found\nMaybe try to send any non-command message?",
+		"usersNotFound": "E: People data not found for this group\nMaybe try to send any non-command message?\nMaybe everyone has 0 credits?"
+	}
 }

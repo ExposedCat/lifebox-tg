@@ -7,8 +7,7 @@ import cron from 'node-schedule'
 import { fetchGroups } from '../index.js'
 
 async function sendPoll(api: Api, i18n: I18n, group: Group) {
-	const text = (label: string) =>
-		i18n.t(process.env.POLL_LANG, `poll.${label}`)
+	const text = (label: string) => i18n.t(process.env.POLL_LANG, `poll.${label}`)
 
 	const { message_id: pollId } = await api.sendPoll(
 		group.groupId,
@@ -67,11 +66,7 @@ async function populatePoll(
 			let repeat = false
 			do {
 				try {
-					await api.forwardMessage(
-						group.groupId,
-						firstGroup.groupId,
-						pollId
-					)
+					await api.forwardMessage(group.groupId, firstGroup.groupId, pollId)
 				} catch (object) {
 					repeat = chatNotFoundError(object)
 				}

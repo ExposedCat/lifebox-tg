@@ -16,11 +16,7 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	let target: { id?: number; name?: string } = {}
 	if (ctx.message.reply_to_message) {
 		const targetEntity = ctx.message.reply_to_message?.from
-		if (
-			targetEntity &&
-			targetEntity.id !== userId &&
-			!targetEntity.is_bot
-		) {
+		if (targetEntity && targetEntity.id !== userId && !targetEntity.is_bot) {
 			target.id = targetEntity.id
 			target.name = targetEntity.first_name
 		}

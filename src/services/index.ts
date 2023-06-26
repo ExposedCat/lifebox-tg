@@ -7,7 +7,10 @@ export { createUserIfNotExists } from './database/create-user.js'
 export { fetchGroups } from './database/get-groups.js'
 export { updateUserCredits, updateUserDayRate } from './database/update-user.js'
 export { getUserProfile } from './database/get-user-profile.js'
-export { getAverageCredits, getAverageLifeQuality } from './database/get-average-value.js'
+export {
+	getAverageCredits,
+	getAverageLifeQuality
+} from './database/get-average-value.js'
 export { getTopSocialUsers, getTopLifeUsers } from './database/get-top-users.js'
 export { getProfiles } from './database/get-profiles.js'
 

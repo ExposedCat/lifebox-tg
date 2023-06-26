@@ -22,12 +22,7 @@ middleware.chatType(['supergroup', 'group']).use(async (ctx, next) => {
 	}
 	const target = ctx.message?.reply_to_message?.from
 	if (target) {
-		await createUserIfNotExists(
-			db.users,
-			target.id,
-			target.first_name,
-			groupId
-		)
+		await createUserIfNotExists(db.users, target.id, target.first_name, groupId)
 	}
 	await next()
 })
