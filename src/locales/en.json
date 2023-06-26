@@ -31,7 +31,7 @@
 		}
 	},
 	"error": {
-		"profileNotFound": "E: Profile not found\nMaybe try to send any non-command message?",
-		"usersNotFound": "E: People data not found for this group\nMaybe try to send any non-command message?\nMaybe everyone has 0 credits?"
+		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",
+		"usersNotFound": "Everyone in this group has 0 social credits. What a community..."
 	}
 }
