@@ -29,7 +29,7 @@ async function fetchUserRatesGraph(
 				dayRates: $.filter(
 					'dayRates',
 					'dayRate',
-					$.cond.gte('dayRate.path', maxRates)
+					$.cond.gte('dayRate.date', maxRates)
 				)
 			})
 		])
@@ -56,6 +56,14 @@ async function fetchUserRatesGraph(
 			$.sort('date')
 		])
 		.toArray()
+
+	if (user.dayRates.length === 1) {
+		user.dayRates.push(user.dayRates[0])
+	}
+
+	if (average.length === 1) {
+		average.push(average[0])
+	}
 
 	const step = {
 		week: 2,
