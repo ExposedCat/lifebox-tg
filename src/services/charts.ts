@@ -27,12 +27,12 @@ async function generateChart(first: Point[], second: Point[]) {
 			labels: first.map(it => makeLabel(it.date)),
 			datasets: [
 				{
-					label: '生活品質',
+					label: '生活品質 (User)',
 					data: first.map(it => it.value),
 					borderColor: '#ff6384'
 				},
 				{
-					label: '平均的',
+					label: '平均的 (Global average)',
 					data: second.map(it => it.value),
 					borderColor: '#ffcd56'
 				}

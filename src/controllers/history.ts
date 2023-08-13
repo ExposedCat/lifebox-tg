@@ -20,7 +20,7 @@ controller.chatType(['supergroup', 'group']).command('history', async ctx => {
 	const { userPoints, averagePoints } = await fetchUserRatesGraph(
 		ctx.db.users,
 		ctx.from.id,
-		'all'
+		'halfYear'
 	)
 	const chartFile = await generateChart(userPoints, averagePoints)
 	await ctx.replyWithPhoto(new InputFile(chartFile))
