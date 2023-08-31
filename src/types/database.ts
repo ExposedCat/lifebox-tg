@@ -4,6 +4,11 @@ interface Group {
 	groupId: number
 }
 
+interface Poll {
+	pollId: string
+	date: Date
+}
+
 interface User {
 	userId: number
 	name: string | undefined
@@ -40,6 +45,7 @@ interface UserLifeQuality {
 interface Database {
 	users: Collection<User>
 	groups: Collection<Group>
+	polls: Collection<Poll>
 }
 
-export { Group, User, UserProfile, UserLifeQuality, Database, ValueState }
+export { Group, User, Poll, UserProfile, UserLifeQuality, Database, ValueState }

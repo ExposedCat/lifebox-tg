@@ -1,4 +1,4 @@
-import { Database, Group, User } from '../types/index.js'
+import { Database, Poll, Group, User } from '../types/index.js'
 
 import { MongoClient } from 'mongodb'
 
@@ -8,7 +8,8 @@ async function connectToDb() {
 	const mongoDb = client.db()
 	const users = mongoDb.collection<User>('users')
 	const groups = mongoDb.collection<Group>('groups')
-	const database: Database = { users, groups }
+	const polls = mongoDb.collection<Poll>('polls')
+	const database: Database = { users, groups, polls }
 	return { database, client }
 }
 

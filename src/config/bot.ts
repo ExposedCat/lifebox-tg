@@ -50,7 +50,7 @@ async function startBot(database: Database) {
 	setupMiddlewares(bot, i18n)
 	setupControllers(bot, i18n)
 	bot.start()
-	startSendPollJob(bot.api, i18n, database.groups)
+	startSendPollJob(bot.api, i18n, database)
 }
 
 export { startBot }

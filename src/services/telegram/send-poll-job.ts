@@ -9,7 +9,7 @@ import { fetchGroups } from '../index.js'
 async function sendPoll(api: Api, i18n: I18n, group: Group) {
 	const text = (label: string) => i18n.t(process.env.POLL_LANG, `poll.${label}`)
 
-	const { message_id: pollId } = await api.sendPoll(
+	const { poll, message_id: messageId } = await api.sendPoll(
 		group.groupId,
 		text('question'),
 		[
@@ -22,10 +22,10 @@ async function sendPoll(api: Api, i18n: I18n, group: Group) {
 		{ is_anonymous: false }
 	)
 
-	return pollId
+	return { pollId: poll.id, messageId }
 }
 
-function chatNotFoundError(object: unknown) {
+function isChatNotFoundError(object: unknown) {
 	const error = object as GrammyError
 	if (error.description !== TelegramApiError.CHAT_NOT_FOUND) {
 		console.warn(`Job | Can't post poll: `, error.description)
@@ -38,26 +38,34 @@ function chatNotFoundError(object: unknown) {
 async function populatePoll(
 	api: Api,
 	i18n: I18n,
-	database: Database['groups']
+	database: Database
 ) {
-	const groups = fetchGroups(database)
+	const groups = fetchGroups(database.groups)
 
 	let firstGroup: Group | null = null
-	let pollId: number | null = null
+	let messageId: number | null = null
+	let pollId: string | null = null
 	while (pollId === null) {
 		firstGroup = await groups.next()
 		if (!firstGroup) {
 			break
 		}
 		try {
-			pollId = await sendPoll(api, i18n, firstGroup)
+			const data = await sendPoll(api, i18n, firstGroup)
+			messageId = data.messageId
+			pollId = data.pollId
 		} catch (object) {
-			chatNotFoundError(object)
+			isChatNotFoundError(object)
 		}
 	}
-	if (!firstGroup || pollId === null) {
+	if (!firstGroup || messageId === null || pollId === null) {
 		return
 	}
+
+	await database.polls.insertOne({
+		pollId,
+		date: new Date(new Date().toDateString())
+	})
 
 	while (await groups.hasNext()) {
 		const group = await groups.next()
@@ -66,9 +74,9 @@ async function populatePoll(
 			let repeat = false
 			do {
 				try {
-					await api.forwardMessage(group.groupId, firstGroup.groupId, pollId)
+					await api.forwardMessage(group.groupId, firstGroup.groupId, messageId)
 				} catch (object) {
-					repeat = chatNotFoundError(object)
+					repeat = isChatNotFoundError(object)
 				}
 			} while (repeat && tries--)
 			if (!tries) {
@@ -81,7 +89,7 @@ async function populatePoll(
 async function startSendPollJob(
 	api: Api,
 	i18n: I18n,
-	database: Database['groups']
+	database: Database
 ) {
 	return cron.scheduleJob(
 		process.env.POLL_TIME,

@@ -3,6 +3,7 @@ export { Bot, Handler, Extra } from './telegram.js'
 export {
 	Group,
 	User,
+	Poll,
 	UserProfile,
 	Database,
 	ValueState,
