@@ -42,7 +42,7 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.groupTextMessage)
 }
 
-async function startBot(database: Database) {
+function startBot(database: Database) {
 	const localesPath = resolvePath(import.meta.url, '../locales')
 	const i18n = initLocaleEngine(localesPath)
 	const bot = new TelegramBot<CustomContext>(process.env.TOKEN)
@@ -51,6 +51,7 @@ async function startBot(database: Database) {
 	setupControllers(bot, i18n)
 	bot.start()
 	startSendPollJob(bot.api, i18n, database)
+	return bot
 }
 
 export { startBot }

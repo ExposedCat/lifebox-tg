@@ -19,14 +19,16 @@ async function startApp() {
 		process.exit(2)
 	}
 
+	let bot
 	try {
-		startBot(database)
+		bot = startBot(database)
 	} catch (error) {
 		console.error(`Error occurred while starting the bot:`, error)
 		process.exit(3)
 	}
 
 	console.info(`App started`)
+	return { bot, database }
 }
 
 export { startApp }
