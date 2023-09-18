@@ -17,11 +17,14 @@ async function migrate(database: Database['groups'], bot: Bot) {
 			const chat = await bot.api.getChat(group.groupId)
 			console.debug(`🟢 ${prefix} ${group.groupId}`)
 			if (chat.type === 'supergroup' || chat.type === 'group') {
-				console.debug(`  \\__ '${chat.title}' [${chat.invite_link}]`)
+				console.debug(`		\\__ '${chat.title}' [${chat.invite_link}]`)
 			}
 		} catch (error) {
 			console.warn(`🔴 ${prefix} ${group.groupId}`)
 			console.warn(`		\\__ ${error}`)
+			console.warn(`		     Deleting...`)
+			await database.deleteOne({ groupId: group.groupId })
+			console.warn(`		     Done`)
 		}
 	}
 }
