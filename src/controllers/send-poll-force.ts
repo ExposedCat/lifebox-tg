@@ -3,7 +3,6 @@ import { CustomContext } from '../types/index.js'
 
 import { Composer } from 'grammy'
 
-// TODO: Change import to the service
 import { populatePoll } from '../services/telegram/send-poll-job.js'
 
 function sendPollForceController(i18n: I18n) {

@@ -11,13 +11,8 @@ function getChannelActionUrl(messageId: number | string) {
 	return `https://t.me/c/${shortId}/${messageId}`
 }
 
-async function sendPoll(args: {
-	api: Api
-	i18n: I18n
-	database: Database
-	group: Group
-}) {
-	const { api, i18n, group, database } = args
+async function sendPoll(args: { api: Api; i18n: I18n; group: Group }) {
+	const { api, i18n, group } = args
 	const text = (label: string) => i18n.t(process.env.POLL_LANG, `poll.${label}`)
 
 	const { poll, message_id: messageId } = await api.sendPoll(
@@ -45,7 +40,6 @@ function isChatNotFoundError(object: unknown) {
 	return true
 }
 
-// TODO: Move to the service
 async function resendPoll(args: {
 	group: Group
 	api: Api
@@ -68,7 +62,7 @@ async function resendPoll(args: {
 								url: getChannelActionUrl(messageId ?? '')
 							}
 						]
-					],
+					]
 				}
 			}
 		)
@@ -77,7 +71,6 @@ async function resendPoll(args: {
 	}
 }
 
-// TODO: Move to the service
 async function populatePoll(api: Api, i18n: I18n, database: Database) {
 	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
 
@@ -89,7 +82,6 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 			const data = await sendPoll({
 				api,
 				i18n,
-				database,
 				group: {
 					isChannel: false,
 					groupId: firstGroupId
@@ -146,4 +138,4 @@ async function startSendPollJob(api: Api, i18n: I18n, database: Database) {
 	)
 }
 
-export { startSendPollJob, populatePoll }
+export { startSendPollJob, populatePoll, resendPoll }

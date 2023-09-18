@@ -1,11 +1,10 @@
 {
 	"state": {
-		"started": "Hello, ${username}!\nThis bot asks about your day and tracking social credits\nYour social profile: /profile\n\nPowered by @ExposedCatDev"
+		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your social /profile\nSee your life quality /history\n\nPowered by @ExposedCatDev"
 	},
 	"fetch": {
 		"profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
-		"rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}",
-		"user_history": "一天的成績歷史\n\n${ratesList}"
+		"rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
 	},
 	"partial": {
 		"icon": {
@@ -34,8 +33,13 @@
 	"button": {
 		"channelAction": "View poll"
 	},
+	"result": {
+		"customPoll": "Custom poll sent to ${success}/${total} groups"
+	},
 	"error": {
 		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",
+		"invalidCustomPoll": "Poll was not specified",
+		"failedToProxyPoll": "Poll cannot be proxied: ${error}",
 		"usersNotFound": "Everyone in this group has 0 social credits. What a community..."
 	}
 }
