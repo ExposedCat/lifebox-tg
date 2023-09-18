@@ -15,6 +15,7 @@ export declare global {
 			REACTIONS_PROVIDER_ID: string
 			RATE_TIMEOUT_MS: string
 			ADMIN_ID: string
+			PUBLIC_POLLS_CHAT_ID: string
 		}
 	}
 }

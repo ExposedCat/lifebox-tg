@@ -21,6 +21,7 @@
 		"userHistoryLine": "${rate}\n"
 	},
 	"poll": {
+		"channelQuestion": "Rate today",
 		"question": "Rate today",
 		"option": {
 			"perfect": "+2 (perfect)",
@@ -29,6 +30,9 @@
 			"minusOne": "-1",
 			"awful": "-2 (awful)"
 		}
+	},
+	"button": {
+		"channelAction": "View poll"
 	},
 	"error": {
 		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",

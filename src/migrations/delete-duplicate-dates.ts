@@ -16,7 +16,9 @@ async function migrate(database: Database['users']) {
 		}
 		const uniqueDates = new Set(user.dayRates.map(it => Number(it.date)))
 		user.dayRates.reverse()
-		const uniqueRates = [...uniqueDates].map(date => user.dayRates.find(it => Number(it.date) === date)!)
+		const uniqueRates = [...uniqueDates].map(
+			date => user.dayRates.find(it => Number(it.date) === date)!
+		)
 		operations.push({
 			updateOne: {
 				filter: {

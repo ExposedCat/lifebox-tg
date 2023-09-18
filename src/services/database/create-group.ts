@@ -4,11 +4,14 @@ import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function createGroupIfNotExists(
 	database: Database['groups'],
-	groupId: number
+	groupId: number,
+	isChannel = false
 ) {
-	const query = { groupId }
-	const groupData = query
-	await database.updateOne(query, $.setOnInsert(groupData), $.upsert())
+	await database.updateOne(
+		{ groupId },
+		$.setOnInsert({ groupId, isChannel }),
+		$.upsert()
+	)
 }
 
 export { createGroupIfNotExists }

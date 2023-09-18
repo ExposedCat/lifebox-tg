@@ -1,3 +1,5 @@
+import { ReturnDocument } from 'mongodb'
+
 class DbQueryBuilder {
 	private static stage(stage: string, value: unknown) {
 		return { [`$${stage}`]: value }
@@ -9,7 +11,10 @@ class DbQueryBuilder {
 	static in = this.stage.bind(null, 'in')
 	static addFields = this.stage.bind(null, 'addFields')
 	static limit = (limit: number) => this.stage('limit', limit)
-	static upsert = () => ({ upsert: true })
+	static upsert = () => ({
+		upsert: true,
+		returnDocument: 'after' as ReturnDocument
+	})
 	static setOnInsert = (data: object) => this.stage('setOnInsert', data)
 	static ne = (value: unknown) => this.stage('ne', value)
 	static set = (data: object) => this.stage('set', data)

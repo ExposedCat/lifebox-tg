@@ -2,6 +2,7 @@ import { Collection } from 'mongodb'
 
 interface Group {
 	groupId: number
+	isChannel: boolean
 }
 
 interface Poll {
