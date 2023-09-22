@@ -13,7 +13,8 @@ function validateEnv() {
 		'REACTIONS_PROVIDER_ID',
 		'RATE_TIMEOUT_MS',
 		'ADMIN_ID',
-		'PUBLIC_POLLS_CHAT_ID'
+		'PUBLIC_POLLS_CHAT_ID',
+		'PUBLIC_POLLS_CHAT_NAME'
 	]
 	for (const env of required) {
 		if (process.env[env] === undefined) {

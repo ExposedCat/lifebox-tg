@@ -7,8 +7,7 @@ import cron from 'node-schedule'
 import { fetchGroups } from '../index.js'
 
 function getChannelActionUrl(messageId: number | string) {
-	const shortId = process.env.PUBLIC_POLLS_CHAT_ID.replace('-100', '')
-	return `https://t.me/c/${shortId}/${messageId}`
+	return `https://t.me/c/${process.env.PUBLIC_POLLS_CHAT_NAME}/${messageId}`
 }
 
 async function sendPoll(args: { api: Api; i18n: I18n; group: Group }) {

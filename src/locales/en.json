@@ -20,7 +20,7 @@
 		"userHistoryLine": "${rate}\n"
 	},
 	"poll": {
-		"channelQuestion": "Rate today",
+		"channelQuestion": "Rate today\n+2 (perfect)\n+1\n0 (neutral)\n-1\n-2 (awful)",
 		"question": "Rate today",
 		"option": {
 			"perfect": "+2 (perfect)",
