@@ -1,4 +1,4 @@
-import { ReturnDocument } from 'mongodb'
+import type { ReturnDocument } from 'mongodb'
 
 class DbQueryBuilder {
 	private static stage(stage: string, value: unknown) {
@@ -22,7 +22,7 @@ class DbQueryBuilder {
 	static filter = (
 		arrayPath: string,
 		iterator: string,
-		condition: Record<string, any>
+		condition: Record<string, unknown>
 	) =>
 		this.stage('filter', {
 			input: `$${arrayPath}`,

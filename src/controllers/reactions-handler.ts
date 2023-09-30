@@ -1,7 +1,5 @@
-import { CustomContext } from '../types/index.js'
-
+import type { CustomContext } from '../types/index.js'
 import { Composer } from 'grammy'
-
 import { handleAction } from '../services/index.js'
 
 const controller = new Composer<CustomContext>()
@@ -11,7 +9,7 @@ controller
 		if (ctx.from.id != Number(process.env.REACTIONS_PROVIDER_ID)) {
 			return
 		}
-		const [_, groupId, userId, targetId, targetName, reaction] = ctx.match
+		const [groupId, userId, targetId, targetName, reaction] = ctx.match.slice(1)
 		await handleAction(
 			ctx.db.users,
 			reaction,

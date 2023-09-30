@@ -1,7 +1,5 @@
-import { CustomContext } from '../types/index.js'
-
+import type { CustomContext } from '../types/index.js'
 import { Composer, InputFile } from 'grammy'
-
 import { fetchUserRatesGraph } from '../services/database/get-user-graph.js'
 import { createUserIfNotExists } from '../services/index.js'
 import { generateChart } from '../services/charts.js'

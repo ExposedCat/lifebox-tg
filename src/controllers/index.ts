@@ -7,5 +7,8 @@ export { controller as botAdded } from './new-member.js'
 export { controller as reactions } from './reactions-handler.js'
 export { controller as rateDate } from './rate-day.js'
 export { controller as history } from './history.js'
-export { sendPollForceController, sendPollHereForceController } from './send-poll-force.js'
+export {
+	sendPollForceController,
+	sendPollHereForceController
+} from './send-poll-force.js'
 export { sendCustomPollController } from './custom-poll.js'

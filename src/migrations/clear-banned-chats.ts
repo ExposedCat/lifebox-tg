@@ -1,5 +1,4 @@
-import { Bot, Database } from '../types/index.js'
-
+import type { Bot, Database } from '../types/index.js'
 import { startApp } from '../config/index.js'
 import { loadEnv } from '../helpers/index.js'
 
@@ -22,17 +21,17 @@ async function migrate(database: Database['groups'], bot: Bot) {
 		} catch (error) {
 			console.warn(`🔴 ${prefix} ${group.groupId}`)
 			console.warn(`		\\__ ${error}`)
-			console.warn(`		     Deleting...`)
+			console.warn('		     Deleting...')
 			await database.deleteOne({ groupId: group.groupId })
-			console.warn(`		     Done`)
+			console.warn('		     Done')
 		}
 	}
 }
 
-console.info(`Starting app…`)
+console.info('Starting app…')
 const { bot, database } = await startApp()
-console.info(`Running migration…`)
+console.info('Running migration…')
 await migrate(database.groups, bot)
-console.info(`Disconnecting…`)
-console.info(`Done`)
+console.info('Disconnecting…')
+console.info('Done')
 process.exit(0)

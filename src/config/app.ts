@@ -6,7 +6,7 @@ async function startApp() {
 		loadEnv()
 		validateEnv()
 	} catch (error) {
-		console.error(`Error occurred while loading environment:`, error)
+		console.error('Error occurred while loading environment:', error)
 		process.exit(1)
 	}
 
@@ -15,7 +15,7 @@ async function startApp() {
 		const connection = await connectToDb()
 		database = connection.database
 	} catch (error) {
-		console.error(`Error occurred while connecting to the database:`, error)
+		console.error('Error occurred while connecting to the database:', error)
 		process.exit(2)
 	}
 
@@ -23,11 +23,11 @@ async function startApp() {
 	try {
 		bot = startBot(database)
 	} catch (error) {
-		console.error(`Error occurred while starting the bot:`, error)
+		console.error('Error occurred while starting the bot:', error)
 		process.exit(3)
 	}
 
-	console.info(`App started`)
+	console.info('App started')
 	return { bot, database }
 }
 

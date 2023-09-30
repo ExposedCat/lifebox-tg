@@ -1,5 +1,4 @@
-import { Database } from '../types/index.js'
-
+import type { Database } from '../types/index.js'
 import { connectToDb } from '../config/index.js'
 import { loadEnv } from '../helpers/index.js'
 
@@ -13,10 +12,10 @@ async function migrate(database: Database['users']) {
 	])
 }
 
-console.info(`Connecting…`)
+console.info('Connecting…')
 const { database, client } = await connectToDb()
-console.info(`Running migration…`)
+console.info('Running migration…')
 await migrate(database.users)
-console.info(`Disconnecting…`)
+console.info('Disconnecting…')
 await client.close()
-console.info(`Done`)
+console.info('Done')

@@ -1,7 +1,5 @@
-import { CustomContext } from '../types/index.js'
-
+import type { CustomContext } from '../types/index.js'
 import { Composer } from 'grammy'
-
 import { getUserProfile } from '../services/index.js'
 
 const controller = new Composer<CustomContext>()

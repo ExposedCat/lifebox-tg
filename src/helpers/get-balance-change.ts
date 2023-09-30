@@ -1,4 +1,4 @@
-import { MessageAction } from '../types/index.js'
+import type { MessageAction } from '../types/index.js'
 
 // This file contents implementation of ELO rating
 // Read more here:

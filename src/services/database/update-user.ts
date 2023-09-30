@@ -1,5 +1,5 @@
-import { Database } from '../../types/index.js'
-import { OrderedBulkOperation } from 'mongodb'
+import type { Database } from '../../types/index.js'
+import type { OrderedBulkOperation } from 'mongodb'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 function addUserCreationStage(operation: OrderedBulkOperation, userId: number) {
@@ -21,7 +21,7 @@ async function updateUserDayRate(
 	value: number,
 	date: Date
 ) {
-	let operation = database.initializeOrderedBulkOp()
+	const operation = database.initializeOrderedBulkOp()
 
 	// Create user if not exists
 	addUserCreationStage(operation, id)
@@ -63,7 +63,7 @@ async function updateUserCredits(
 	create = false,
 	changed = false
 ) {
-	let operation = database.initializeOrderedBulkOp()
+	const operation = database.initializeOrderedBulkOp()
 
 	// Create user if not exists
 	addUserCreationStage(operation, id)
@@ -85,7 +85,7 @@ async function updateUserCredits(
 
 	// Update credits & name if specified
 	const hasSet = name && !create && changed
-	let update = {
+	const update = {
 		...$.inc('credits.$.credits', change),
 		...(hasSet &&
 			$.set({

@@ -1,7 +1,5 @@
 import { MessageAction } from '../../types/index.js'
-
 import fs from 'fs/promises'
-
 import {
 	resolvePath,
 	sentenceContainsWord,
@@ -17,7 +15,7 @@ async function getActionByWords(
 		resolvePath(import.meta.url, '../../data/words.json'),
 		'utf-8'
 	)
-	let result = {
+	const result = {
 		changer: 0,
 		target: 0
 	}

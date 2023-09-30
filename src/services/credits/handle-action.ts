@@ -1,5 +1,4 @@
-import { Database } from '../../types/index.js'
-
+import type { Database } from '../../types/index.js'
 import {
 	getMessageAction,
 	getProfiles,

@@ -1,5 +1,4 @@
-import { Database, Poll, Group, User } from '../types/index.js'
-
+import type { Database, Poll, Group, User } from '../types/index.js'
 import { MongoClient } from 'mongodb'
 
 async function connectToDb() {

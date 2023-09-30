@@ -1,5 +1,4 @@
-import { Database, UserProfile } from '../../types/index.js'
-
+import type { Database, UserProfile } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function getProfiles(

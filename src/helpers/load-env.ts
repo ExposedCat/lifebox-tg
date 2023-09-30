@@ -1,5 +1,4 @@
 import dotenv from 'dotenv'
-
 import { resolvePath } from './index.js'
 
 function loadEnv(configName = '.env') {

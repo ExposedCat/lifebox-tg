@@ -1,15 +1,11 @@
-import { Bot, CustomContext, Database } from '../types/index.js'
-import { I18n } from '@grammyjs/i18n'
-
+import type { Bot, CustomContext, Database } from '../types/index.js'
+import type { I18n } from '@grammyjs/i18n'
 import { Bot as TelegramBot, session } from 'grammy'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
-
 import { resolvePath } from '../helpers/index.js'
-
 import { initLocaleEngine } from './index.js'
 import * as handlers from '../controllers/index.js'
 import { createReplyWithTextFunc, startSendPollJob } from '../services/index.js'
-
 import * as middlewares from '../middlewares/index.js'
 
 function extendContext(bot: Bot, database: Database) {

@@ -1,5 +1,8 @@
-import { Database, UserLifeQuality, UserProfile } from '../../types/index.js'
-
+import type {
+	Database,
+	UserLifeQuality,
+	UserProfile
+} from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
 async function getTopSocialUsers(database: Database['users'], groupId: number) {

@@ -1,10 +1,9 @@
-import { Database, Group, TelegramApiError } from '../../types/index.js'
+import type { Database, Group } from '../../types/index.js'
+import { TelegramApiError } from '../../types/index.js'
 import { setTimeout } from 'timers/promises'
-import { Api, GrammyError } from 'grammy'
-import { I18n } from '@grammyjs/i18n/dist/source'
-
+import type { Api, GrammyError } from 'grammy'
+import type { I18n } from '@grammyjs/i18n/dist/source'
 import cron from 'node-schedule'
-
 import { fetchGroups } from '../index.js'
 
 function getChannelActionUrl(messageId: number | string) {
@@ -34,7 +33,7 @@ async function sendInitialPoll(args: { api: Api; i18n: I18n; group: Group }) {
 function isChatNotFoundError(object: unknown) {
 	const error = object as GrammyError
 	if (error.description !== TelegramApiError.CHAT_NOT_FOUND) {
-		console.warn(`Job | Can't post poll: `, error.description)
+		console.warn("Job | Can't post poll: ", error.description)
 		return false
 	}
 	return true
@@ -103,7 +102,7 @@ async function initializePoll(api: Api, i18n: I18n, database: Database) {
 	if (messageId === null || pollId === null) {
 		if (!retriesLeft) {
 			console.error(
-				`Job | Can't initiate poll job: something is wrong with first chat`
+				"Job | Can't initiate poll job: something is wrong with first chat"
 			)
 		}
 		return { messageId }
@@ -114,7 +113,13 @@ async function initializePoll(api: Api, i18n: I18n, database: Database) {
 	return { messageId }
 }
 
-async function sendPoll(api: Api, i18n: I18n, database: Database, group: Group, pollMessageId?: number) {
+async function sendPoll(
+	api: Api,
+	i18n: I18n,
+	database: Database,
+	group: Group,
+	pollMessageId?: number
+) {
 	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
 	let retriesLeft = 5
 	let repeat = false
@@ -122,7 +127,7 @@ async function sendPoll(api: Api, i18n: I18n, database: Database, group: Group, 
 		try {
 			let messageId = pollMessageId
 			if (!messageId) {
-				let poll = await database.polls.findOne({
+				const poll = await database.polls.findOne({
 					date: new Date(new Date().toDateString())
 				})
 				if (poll) {
@@ -130,14 +135,16 @@ async function sendPoll(api: Api, i18n: I18n, database: Database, group: Group, 
 				} else {
 					const initializedPoll = await initializePoll(api, i18n, database)
 					if (!initializedPoll.messageId) {
-						console.error(`Job | Can't post poll: initial poll not found and failed to initialize`)
+						console.error(
+							"Job | Can't post poll: initial poll not found and failed to initialize"
+						)
 						return
 					}
 					messageId = initializedPoll.messageId
 				}
 				if (!messageId) {
 					// NOTE: This should only happen with old polls, i.e. never
-					console.error(`Job | Can't post poll: initial poll has no message ID`)
+					console.error("Job | Can't post poll: initial poll has no message ID")
 					return
 				}
 			}
@@ -147,7 +154,7 @@ async function sendPoll(api: Api, i18n: I18n, database: Database, group: Group, 
 		}
 	} while (repeat && retriesLeft--)
 	if (!retriesLeft) {
-		console.error(`Job | Can't post poll: Telegram API fucked up`)
+		console.error("Job | Can't post poll: Telegram API fucked up")
 	}
 }
 

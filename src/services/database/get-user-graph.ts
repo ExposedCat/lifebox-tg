@@ -1,7 +1,6 @@
-import { Database, User } from '../../types/index.js'
-
+import type { Database, User } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
-import { Point } from '../charts.js'
+import type { Point } from '../charts.js'
 
 function valuesAverage(array: { value: number }[]) {
 	const sum = array.reduce((sum, it) => sum + it.value, 0)

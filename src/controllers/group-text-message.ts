@@ -1,7 +1,5 @@
-import { CustomContext } from '../types/index.js'
-
+import type { CustomContext } from '../types/index.js'
 import { Composer } from 'grammy'
-
 import { handleAction } from '../services/index.js'
 
 const controller = new Composer<CustomContext>()
@@ -13,7 +11,7 @@ controller.chatType(['supergroup', 'group']).on(':text', async ctx => {
 	const groupId = ctx.chat.id
 	const { db } = ctx
 
-	let target: { id?: number; name?: string } = {}
+	const target: { id?: number; name?: string } = {}
 	if (ctx.message.reply_to_message) {
 		const targetEntity = ctx.message.reply_to_message?.from
 		if (targetEntity && targetEntity.id !== userId && !targetEntity.is_bot) {

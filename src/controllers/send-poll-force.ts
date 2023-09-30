@@ -1,8 +1,6 @@
-import { I18n } from '@grammyjs/i18n/dist/source/i18n.js'
-import { CustomContext } from '../types/index.js'
-
+import type { I18n } from '@grammyjs/i18n/dist/source/i18n.js'
+import type { CustomContext } from '../types/index.js'
 import { Composer } from 'grammy'
-
 import { populatePoll, sendPoll } from '../services/telegram/send-poll-job.js'
 
 function sendPollForceController(i18n: I18n) {
@@ -12,7 +10,11 @@ function sendPollForceController(i18n: I18n) {
 		.command('force_resend', async ctx => {
 			if (ctx.from.id === Number(process.env.ADMIN_ID)) {
 				await ctx.text('result.jobStarted')
-				const { totalGroups, success } = await populatePoll(ctx.api, i18n, ctx.db)
+				const { totalGroups, success } = await populatePoll(
+					ctx.api,
+					i18n,
+					ctx.db
+				)
 				await ctx.text('result.resendDone', { total: totalGroups, success })
 			}
 		})
