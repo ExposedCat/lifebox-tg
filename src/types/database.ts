@@ -7,6 +7,7 @@ interface Group {
 
 interface Poll {
 	pollId: string
+	messageId?: number
 	date: Date
 }
 

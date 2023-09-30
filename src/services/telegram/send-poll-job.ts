@@ -1,4 +1,5 @@
 import { Database, Group, TelegramApiError } from '../../types/index.js'
+import { setTimeout } from 'timers/promises'
 import { Api, GrammyError } from 'grammy'
 import { I18n } from '@grammyjs/i18n/dist/source'
 
@@ -10,7 +11,7 @@ function getChannelActionUrl(messageId: number | string) {
 	return `https://t.me/${process.env.PUBLIC_POLLS_CHAT_NAME}/${messageId}`
 }
 
-async function sendPoll(args: { api: Api; i18n: I18n; group: Group }) {
+async function sendInitialPoll(args: { api: Api; i18n: I18n; group: Group }) {
 	const { api, i18n, group } = args
 	const text = (label: string) => i18n.t(process.env.POLL_LANG, `poll.${label}`)
 
@@ -70,15 +71,21 @@ async function resendPoll(args: {
 	}
 }
 
-async function populatePoll(api: Api, i18n: I18n, database: Database) {
+async function initializePoll(api: Api, i18n: I18n, database: Database) {
 	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
+
+	const date = new Date(new Date().toDateString())
+	const existingPoll = await database.polls.findOne({ date })
+	if (existingPoll && existingPoll.messageId) {
+		return { messageId: existingPoll.messageId }
+	}
 
 	let messageId: number | null = null
 	let pollId: string | null = null
 	let retriesLeft = 10
 	while (pollId === null && retriesLeft) {
 		try {
-			const data = await sendPoll({
+			const data = await sendInitialPoll({
 				api,
 				i18n,
 				group: {
@@ -99,14 +106,57 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 				`Job | Can't initiate poll job: something is wrong with first chat`
 			)
 		}
-		return
+		return { messageId }
 	}
 
-	await database.polls.insertOne({
-		pollId,
-		date: new Date(new Date().toDateString())
-	})
+	await database.polls.insertOne({ pollId, messageId, date })
 
+	return { messageId }
+}
+
+async function sendPoll(api: Api, i18n: I18n, database: Database, group: Group, pollMessageId?: number) {
+	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
+	let retriesLeft = 5
+	let repeat = false
+	do {
+		try {
+			let messageId = pollMessageId
+			if (!messageId) {
+				let poll = await database.polls.findOne({
+					date: new Date(new Date().toDateString())
+				})
+				if (poll) {
+					messageId = poll.messageId
+				} else {
+					const initializedPoll = await initializePoll(api, i18n, database)
+					if (!initializedPoll.messageId) {
+						console.error(`Job | Can't post poll: initial poll not found and failed to initialize`)
+						return
+					}
+					messageId = initializedPoll.messageId
+				}
+				if (!messageId) {
+					// NOTE: This should only happen with old polls, i.e. never
+					console.error(`Job | Can't post poll: initial poll has no message ID`)
+					return
+				}
+			}
+			await resendPoll({ api, i18n, group, firstGroupId, messageId })
+		} catch (object) {
+			repeat = isChatNotFoundError(object)
+		}
+	} while (repeat && retriesLeft--)
+	if (!retriesLeft) {
+		console.error(`Job | Can't post poll: Telegram API fucked up`)
+	}
+}
+
+async function populatePoll(api: Api, i18n: I18n, database: Database) {
+	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
+	const { messageId } = await initializePoll(api, i18n, database)
+	if (messageId === null) {
+		return
+	}
 	const groups = fetchGroups(database.groups)
 	while (await groups.hasNext()) {
 		const group = await groups.next()
@@ -114,18 +164,8 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 			if (group.groupId === firstGroupId) {
 				continue
 			}
-			let retriesLeft = 5
-			let repeat = false
-			do {
-				try {
-					await resendPoll({ api, i18n, group, firstGroupId, messageId })
-				} catch (object) {
-					repeat = isChatNotFoundError(object)
-				}
-			} while (repeat && retriesLeft--)
-			if (!retriesLeft) {
-				console.error(`Job | Can't post poll: Telegram API fucked up`)
-			}
+			await sendPoll(api, i18n, database, group, messageId)
+			await setTimeout(1_000)
 		}
 	}
 }
@@ -137,4 +177,4 @@ async function startSendPollJob(api: Api, i18n: I18n, database: Database) {
 	)
 }
 
-export { startSendPollJob, populatePoll, resendPoll }
+export { startSendPollJob, populatePoll, resendPoll, sendPoll }

@@ -34,6 +34,7 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.rateDate)
 	bot.use(handlers.reactions)
 	bot.use(handlers.sendPollForceController(i18n))
+	bot.use(handlers.sendPollHereForceController(i18n))
 	bot.use(handlers.sendCustomPollController(i18n))
 	bot.use(handlers.start)
 	bot.use(handlers.profile)

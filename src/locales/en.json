@@ -34,13 +34,17 @@
 		"channelAction": "View poll"
 	},
 	"result": {
-		"customPoll": "Custom poll sent to ${success}/${total} groups"
+		"customPoll": "Custom poll sent to ${success}/${total} groups",
+		"resendDone": "Poll re-sent successfully",
+		"jobStarted": "Job started…",
+		"jobStartedHere": "Job started for this group…"
 	},
 	"error": {
 		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",
 		"invalidCustomPoll": "Poll was not specified",
 		"failedToProxyPoll": "Poll cannot be proxied: ${error}",
 		"noRightsForCustomPoll": "You have no rights to send custom polls",
-		"usersNotFound": "Everyone in this group has 0 social credits. What a community..."
+		"usersNotFound": "Everyone in this group has 0 social credits. What a community...",
+		"chatNotFound": "Chat not found"
 	}
 }
