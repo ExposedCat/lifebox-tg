@@ -35,7 +35,7 @@
 	},
 	"result": {
 		"customPoll": "Custom poll sent to ${success}/${total} groups",
-		"resendDone": "Poll re-sent successfully",
+		"resendDone": "Poll re-sent to ${success}/${total} groups",
 		"jobStarted": "Job started…",
 		"jobStartedHere": "Job started for this group…"
 	},

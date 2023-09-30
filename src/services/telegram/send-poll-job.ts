@@ -152,10 +152,12 @@ async function sendPoll(api: Api, i18n: I18n, database: Database, group: Group, 
 }
 
 async function populatePoll(api: Api, i18n: I18n, database: Database) {
+	let totalGroups = 0
+	let success = 0
 	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
 	const { messageId } = await initializePoll(api, i18n, database)
 	if (messageId === null) {
-		return
+		return { totalGroups, success }
 	}
 	const groups = fetchGroups(database.groups)
 	while (await groups.hasNext()) {
@@ -164,10 +166,18 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 			if (group.groupId === firstGroupId) {
 				continue
 			}
-			await sendPoll(api, i18n, database, group, messageId)
-			await setTimeout(1_000)
+			totalGroups += 1
+			try {
+				await sendPoll(api, i18n, database, group, messageId)
+				success += 1
+				await setTimeout(1_000)
+			} catch {
+				// Ignore
+			}
 		}
 	}
+
+	return { totalGroups, success }
 }
 
 async function startSendPollJob(api: Api, i18n: I18n, database: Database) {

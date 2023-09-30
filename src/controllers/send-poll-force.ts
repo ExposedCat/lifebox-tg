@@ -12,8 +12,8 @@ function sendPollForceController(i18n: I18n) {
 		.command('force_resend', async ctx => {
 			if (ctx.from.id === Number(process.env.ADMIN_ID)) {
 				await ctx.text('result.jobStarted')
-				await populatePoll(ctx.api, i18n, ctx.db)
-				await ctx.text('result.resendDone')
+				const { totalGroups, success } = await populatePoll(ctx.api, i18n, ctx.db)
+				await ctx.text('result.resendDone', { total: totalGroups, success })
 			}
 		})
 	return controller
