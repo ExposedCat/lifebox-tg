@@ -18,6 +18,10 @@ function sendCustomPollController(i18n: I18n) {
 				await ctx.text('error.invalidCustomPoll')
 				return
 			}
+			if (ctx.from.id === Number(process.env.ADMIN_ID)) {
+				await ctx.text('error.noRightsForCustomPoll')
+				return
+			}
 
 			const publicPollChatId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
 
