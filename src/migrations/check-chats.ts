@@ -14,6 +14,7 @@ async function migrate(database: Database['groups'], bot: Bot) {
 		const prefix = group.isChannel ? 'Channel' : 'Chat'
 		try {
 			const chat = await bot.api.getChat(group.groupId)
+			await bot.api.sendChatAction(group.groupId, 'choose_sticker')
 			console.debug(`🟢 ${prefix} ${group.groupId}`)
 			if (chat.type === 'supergroup' || chat.type === 'group') {
 				console.debug(`  \\__ '${chat.title}' [${chat.invite_link}]`)
