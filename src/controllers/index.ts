@@ -7,6 +7,7 @@ export { controller as botAdded } from './new-member.js'
 export { controller as reactions } from './reactions-handler.js'
 export { controller as rateDate } from './rate-day.js'
 export { controller as history } from './history.js'
+export { controller as compareGraphs } from './compare-graph.js'
 export {
 	sendPollForceController,
 	sendPollHereForceController

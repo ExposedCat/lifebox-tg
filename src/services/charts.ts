@@ -11,34 +11,67 @@ function makeLabel(date: Date) {
 	return formatter.format(date)
 }
 
+function makeDatasetData(points: Point[], labels: Set<string>) {
+	const values: Map<string, number> = new Map(
+		points.map(it => [makeLabel(it.date), it.value])
+	)
+	const data: (number | null)[] = []
+	for (const label of labels) {
+		data.push(values.get(label) ?? null)
+	}
+	return data
+}
+
+// TODO: Move to helpers
 async function downloadImage(url: string, filename: string) {
 	const response = await fetch(url)
 	const buffer = await response.arrayBuffer()
 	await fs.writeFile(filename, new DataView(buffer))
 }
 
+// TODO: Move to helpers
+const COLORS = [
+	'#ff6384',
+	'#9966ff',
+	'#36a2eb',
+	'#4bc0c0',
+	'#ff9f40',
+	'#c9cbcf'
+]
+const randomColor = () =>
+	`#${Math.floor(Math.random() * 16777215).toString(16)}`
+
 type Point = { date: Date; value: number }
 
-async function generateChart(first: Point[], second: Point[]) {
+export type Dataset = { label: string; points: Point[] }
+
+async function generateChart(userDatasets: Dataset[], averagePoints: Point[]) {
+	const labels = new Set(
+		[...userDatasets.flatMap(it => it.points)]
+			.sort((a, b) => Number(a.date) - Number(b.date))
+			.map(it => makeLabel(it.date))
+	)
+
+	const datasets = userDatasets.map((it, i) => ({
+		label: it.label,
+		data: makeDatasetData(it.points, labels),
+		borderColor: COLORS[i] ?? randomColor()
+	}))
+	datasets.push({
+		label: 'Average',
+		data: makeDatasetData(averagePoints, labels),
+		borderColor: '#ffcd56'
+	})
+
 	const chart = new ChartJsImage()
 	chart.setConfig({
 		type: 'line',
 		data: {
-			labels: first.map(it => makeLabel(it.date)),
-			datasets: [
-				{
-					label: '生活品質 (User)',
-					data: first.map(it => it.value),
-					borderColor: '#ff6384'
-				},
-				{
-					label: '平均的 (Global average)',
-					data: second.map(it => it.value),
-					borderColor: '#ffcd56'
-				}
-			]
+			labels: [...labels],
+			datasets
 		},
 		options: {
+			spanGaps: true,
 			responsive: true,
 			layout: {
 				padding: 20
