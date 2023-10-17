@@ -1,5 +1,5 @@
 import type { CustomContext } from '../types/index.js'
-import { Composer, InputFile } from 'grammy'
+import { Composer, InlineKeyboard, InputFile } from 'grammy'
 import { fetchUserRatesGraph } from '../services/database/get-user-graph.js'
 import { createUserIfNotExists } from '../services/index.js'
 import { generateChart } from '../services/charts.js'
@@ -7,31 +7,42 @@ import { generateChart } from '../services/charts.js'
 const controller = new Composer<CustomContext>()
 controller
 	.chatType(['supergroup', 'group'])
-	.callbackQuery(/compare_(\d+)/, async ctx => {
+	.callbackQuery(/compare(?:_\d+)+/, async ctx => {
 		await createUserIfNotExists(
 			ctx.db.users,
 			ctx.callbackQuery.from.id,
 			ctx.callbackQuery.from.first_name,
 			ctx.chat.id
 		)
-		const targetUserId = Number(ctx.match[1])
-		if (targetUserId === ctx.callbackQuery.from.id) {
+		const targetUserIds = ctx.callbackQuery.data.split('_').slice(1).map(Number)
+		if (targetUserIds.includes(ctx.callbackQuery.from.id)) {
 			await ctx.answerCallbackQuery({
 				text: ctx.i18n.t('error.cannotCompareSelf'),
 				show_alert: true
 			})
 			return
 		}
+		const allUserIds = [...targetUserIds, ctx.callbackQuery.from.id]
 		const { userDatasets, averagePoints } = await fetchUserRatesGraph({
 			database: ctx.db.users,
-			userIds: [targetUserId, ctx.callbackQuery.from.id],
+			userIds: allUserIds,
 			mode: 'halfYear'
 		})
 		const chartFile = await generateChart(userDatasets, averagePoints)
-		await ctx.editMessageMedia({
-			type: 'photo',
-			media: new InputFile(chartFile)
-		})
+		await ctx.editMessageMedia(
+			{
+				type: 'photo',
+				media: new InputFile(chartFile)
+			},
+			allUserIds.length <= 5
+				? {
+						reply_markup: new InlineKeyboard().text(
+							ctx.i18n.t('button.compare'),
+							`compare_${allUserIds.join('_')}`
+						)
+				  }
+				: undefined
+		)
 	})
 
 export { controller }

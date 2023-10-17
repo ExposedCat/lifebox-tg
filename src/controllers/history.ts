@@ -1,5 +1,5 @@
 import type { CustomContext } from '../types/index.js'
-import { Composer, InputFile } from 'grammy'
+import { Composer, InlineKeyboard, InputFile } from 'grammy'
 import { fetchUserRatesGraph } from '../services/database/get-user-graph.js'
 import { createUserIfNotExists } from '../services/index.js'
 import { generateChart } from '../services/charts.js'
@@ -19,16 +19,10 @@ controller.chatType(['supergroup', 'group']).command('history', async ctx => {
 	})
 	const chartFile = await generateChart(userDatasets, averagePoints)
 	await ctx.replyWithPhoto(new InputFile(chartFile), {
-		reply_markup: {
-			inline_keyboard: [
-				[
-					{
-						text: ctx.i18n.t('button.compare'),
-						callback_data: `compare_${ctx.from.id}`
-					}
-				]
-			]
-		}
+		reply_markup: new InlineKeyboard().text(
+			ctx.i18n.t('button.compare'),
+			`compare_${ctx.from.id}`
+		)
 	})
 })
 

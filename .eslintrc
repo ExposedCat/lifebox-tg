@@ -21,6 +21,7 @@
 		"no-extra-parens": "off",
 		"arrow-parens": "off",
 		"prettier/prettier": 2,
-		"semi": "off"
+		"semi": "off",
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
 	}
 }
