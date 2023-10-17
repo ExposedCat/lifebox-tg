@@ -1,6 +1,7 @@
+import { Composer } from 'grammy'
+
 import type { I18n } from '@grammyjs/i18n/dist/source/i18n.js'
 import type { CustomContext } from '../types/index.js'
-import { Composer } from 'grammy'
 import { populatePoll, sendPoll } from '../services/telegram/send-poll-job.js'
 
 function sendPollForceController(i18n: I18n) {

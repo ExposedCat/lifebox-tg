@@ -1,5 +1,6 @@
-import type { Database, Poll, Group, User } from '../types/index.js'
 import { MongoClient } from 'mongodb'
+
+import type { Database, Poll, Group, User } from '../types/index.js'
 
 async function connectToDb() {
 	const client = new MongoClient(process.env.DB_CONNECTION_STRING)

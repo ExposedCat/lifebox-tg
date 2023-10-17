@@ -1,8 +1,9 @@
+import { Composer } from 'grammy'
 import type { I18n } from '@grammyjs/i18n'
+
 import { fetchGroups } from '../services/index.js'
 import { resendPoll } from '../services/telegram/send-poll-job.js'
 import type { CustomContext } from '../types/index.js'
-import { Composer } from 'grammy'
 import { proxyPoll } from '../services/telegram/proxy-poll.js'
 
 function sendCustomPollController(i18n: I18n) {
@@ -46,7 +47,7 @@ function sendCustomPollController(i18n: I18n) {
 					break
 				}
 				if (group.isChannel) {
-					// TODO: Implement channel settings before sending custom polls there
+					// TODO: Implement settings before sending custom polls there
 					continue
 				}
 				totalGroups += 1

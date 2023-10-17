@@ -1,7 +1,8 @@
-import type { Bot, CustomContext, Database } from '../types/index.js'
 import type { I18n } from '@grammyjs/i18n'
 import { Bot as TelegramBot, session } from 'grammy'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
+
+import type { Bot, CustomContext, Database } from '../types/index.js'
 import { resolvePath } from '../helpers/index.js'
 import { initLocaleEngine } from './index.js'
 import * as handlers from '../controllers/index.js'

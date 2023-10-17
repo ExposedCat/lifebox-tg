@@ -1,7 +1,7 @@
 import type { Database, UserProfile } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
-async function getProfiles(
+export async function getProfiles(
 	database: Database['users'],
 	changerId: number,
 	targetId: number,
@@ -41,5 +41,3 @@ async function getProfiles(
 		target: target
 	}
 }
-
-export { getProfiles }

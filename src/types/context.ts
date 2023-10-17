@@ -1,6 +1,7 @@
-import type { Extra, Database } from './index.js'
 import type { Context, SessionFlavor } from 'grammy'
 import type { I18nContextFlavor, TemplateData } from '@grammyjs/i18n'
+
+import type { Extra, Database } from './index.js'
 
 interface Custom<C extends Context> {
 	text: (

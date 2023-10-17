@@ -1,7 +1,7 @@
-import type { Database } from '../../types/index.js'
+import type { Database, Group } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 
-async function createGroupIfNotExists(
+export async function createGroupIfNotExists(
 	database: Database['groups'],
 	groupId: number,
 	isChannel = false
@@ -13,4 +13,6 @@ async function createGroupIfNotExists(
 	)
 }
 
-export { createGroupIfNotExists }
+export function fetchGroups(database: Database['groups']) {
+	return database.find<Group>({})
+}

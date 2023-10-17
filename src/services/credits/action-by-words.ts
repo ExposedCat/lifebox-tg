@@ -1,5 +1,6 @@
-import { MessageAction } from '../../types/index.js'
 import fs from 'fs/promises'
+
+import { MessageAction } from '../../types/index.js'
 import {
 	resolvePath,
 	sentenceContainsWord,

@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
-import fetch from 'node-fetch'
 import ChartJsImage from 'chartjs-to-image'
+
+import { COLORS, downloadImage, randomColor } from '../helpers/graph-utils.js'
 
 function makeLabel(date: Date) {
 	const formatter = new Intl.DateTimeFormat('uk', {
@@ -21,25 +21,6 @@ function makeDatasetData(points: Point[], labels: Set<string>) {
 	}
 	return data
 }
-
-// TODO: Move to helpers
-async function downloadImage(url: string, filename: string) {
-	const response = await fetch(url)
-	const buffer = await response.arrayBuffer()
-	await fs.writeFile(filename, new DataView(buffer))
-}
-
-// TODO: Move to helpers
-const COLORS = [
-	'#ff6384',
-	'#9966ff',
-	'#36a2eb',
-	'#4bc0c0',
-	'#ff9f40',
-	'#c9cbcf'
-]
-const randomColor = () =>
-	`#${Math.floor(Math.random() * 16777215).toString(16)}`
 
 type Point = { date: Date; value: number }
 

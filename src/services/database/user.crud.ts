@@ -1,6 +1,9 @@
-import type { Database } from '../../types/index.js'
 import type { OrderedBulkOperation } from 'mongodb'
+
+import type { Database, UserProfile } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
+import { getValueState } from '../credits/get-value-state.js'
+import { getAverageLifeQuality, getAverageCredits } from './statistics.js'
 
 function addUserCreationStage(operation: OrderedBulkOperation, userId: number) {
 	operation
@@ -14,7 +17,24 @@ function addUserCreationStage(operation: OrderedBulkOperation, userId: number) {
 		})
 }
 
-async function updateUserDayRate(
+export async function createUserIfNotExists(
+	database: Database['users'],
+	id: number,
+	name: string,
+	initialGroupId: number
+) {
+	await updateUserCredits(
+		database,
+		id,
+		initialGroupId,
+		Number(process.env.INITIAL_CREDITS),
+		name,
+		true,
+		true
+	)
+}
+
+export async function updateUserDayRate(
 	database: Database['users'],
 	id: number,
 	pollId: string,
@@ -54,7 +74,7 @@ async function updateUserDayRate(
 	await operation.execute()
 }
 
-async function updateUserCredits(
+export async function updateUserCredits(
 	database: Database['users'],
 	id: number,
 	groupId: number,
@@ -103,4 +123,44 @@ async function updateUserCredits(
 	await operation.execute()
 }
 
-export { updateUserCredits, updateUserDayRate }
+export async function getUserProfile(
+	database: Database['users'],
+	userId: number,
+	localGroupId: number,
+	calcAverage: boolean
+) {
+	const users = database.aggregate<UserProfile>([
+		$.match({ userId }),
+		$.project({
+			name: 1,
+			credits: 1,
+			lifeQuality: {
+				$round: [{ $avg: '$dayRates.value' }, 1]
+			}
+		}),
+		$.unwind('credits'),
+		$.match({ 'credits.groupId': localGroupId }),
+		$.project({
+			name: 1,
+			lifeQuality: 1,
+			credits: '$credits.credits',
+			lastRated: '$credits.lastRated'
+		})
+	])
+
+	const user = await users.next()
+	if (!user) {
+		return null
+	}
+
+	let state: string | null = null
+	let averageCredits: number | null = null
+	let averageLifeQuality: number | null = null
+	if (calcAverage) {
+		averageLifeQuality = await getAverageLifeQuality(database, localGroupId)
+		averageCredits = await getAverageCredits(database, localGroupId)
+		state = getValueState(user.credits, averageCredits)
+	}
+
+	return { user, averageCredits, averageLifeQuality, state }
+}
