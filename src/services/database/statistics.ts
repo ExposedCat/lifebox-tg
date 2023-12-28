@@ -1,5 +1,6 @@
 import type { Database } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
+import type { DayRate } from '../../types/database.js'
 
 async function getAverageCredits(database: Database['users'], groupId: number) {
 	const aggregation = database.aggregate<{ median: number }>([
@@ -37,11 +38,11 @@ async function getAverageCredits(database: Database['users'], groupId: number) {
 
 async function getAverageLifeQuality(
 	database: Database['users'],
-	groupId: number
+	groupId: number | null
 ) {
 	const aggregation = database.aggregate<{ average: number }>([
 		$.match({
-			'credits.groupId': groupId,
+			...(groupId !== null && { 'credits.groupId': groupId }),
 			$expr: {
 				$ne: [{ $size: '$dayRates' }, 0]
 			}
@@ -70,4 +71,28 @@ async function getAverageLifeQuality(
 	return data?.average || 0
 }
 
-export { getAverageCredits, getAverageLifeQuality }
+async function getUserRates(
+	database: Database['users'],
+	userId: number,
+	since: Date
+) {
+	return await database
+		.aggregate<{ date: Date; rates: DayRate[]; average: number }>([
+			$.match({ userId }),
+			$.unwind('dayRates'),
+			$.sort('dayRates.date', 1),
+			$.match({ 'dayRates.date': $.gte(since) }),
+			$.group({
+				_id: {
+					year: { $year: '$dayRates.date' },
+					month: { $month: '$dayRates.date' }
+				},
+				date: { $first: '$dayRates.date' },
+				average: { $avg: '$dayRates.value' },
+				rates: { $push: '$dayRates' }
+			})
+		])
+		.toArray()
+}
+
+export { getAverageCredits, getAverageLifeQuality, getUserRates }

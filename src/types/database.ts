@@ -1,28 +1,30 @@
 import type { Collection } from 'mongodb'
 
-interface Group {
+type Group = {
 	groupId: number
 	isChannel: boolean
 }
 
-interface Poll {
+type Poll = {
 	pollId: string
 	messageId?: number
 	date: Date
 }
 
-interface User {
+type DayRate = {
+	pollId: number
+	date: Date
+	value: number
+}
+
+type User = {
 	userId: number
 	name: string | undefined
 	credits: {
 		groupId: number
 		credits: number
 	}[]
-	dayRates: {
-		pollId: number
-		date: Date
-		value: number
-	}[]
+	dayRates: DayRate[]
 	lastRated: Date
 }
 
@@ -32,22 +34,31 @@ enum ValueState {
 	High = 'high'
 }
 
-interface UserProfile {
+type UserProfile = {
 	name?: string
 	credits: number
 	lifeQuality: number
 	lastRated: Date
 }
 
-interface UserLifeQuality {
+type UserLifeQuality = {
 	name?: string
 	lifeQuality: number
 }
 
-interface Database {
+type Database = {
 	users: Collection<User>
 	groups: Collection<Group>
 	polls: Collection<Poll>
 }
 
-export { Group, User, Poll, UserProfile, UserLifeQuality, Database, ValueState }
+export {
+	Group,
+	User,
+	Poll,
+	UserProfile,
+	UserLifeQuality,
+	Database,
+	ValueState,
+	DayRate
+}

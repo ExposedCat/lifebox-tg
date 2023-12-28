@@ -40,6 +40,9 @@
 		"jobStarted": "Job started…",
 		"jobStartedHere": "Job started for this group…"
 	},
+  "debug": {
+    "json": "<code>${json}</code>"
+  },
 	"error": {
 		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",
 		"invalidCustomPoll": "Poll was not specified",

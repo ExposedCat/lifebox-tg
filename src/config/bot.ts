@@ -39,6 +39,7 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.history)
 	bot.use(handlers.lifeQuality)
 	bot.use(handlers.social)
+	bot.use(handlers.recapController)
 	bot.use(handlers.groupTextMessage)
 }
 
