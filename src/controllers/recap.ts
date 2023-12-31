@@ -14,8 +14,12 @@ recapController
 		const daysOffset = recap.days < 10 ? 37 : recap.days < 100 ? 21 : 0
 		const averageOffset = recap.average < 0 ? -20 : 0
 
-		const happiestMonthLabel = `${recap.happiestMonth.name} (${recap.happiestMonth.value})`
-		const worstMonthLabel = `${recap.worstMonth.name} (${recap.worstMonth.value})`
+		const happiestMonthLabel = `${
+			recap.happiestMonth.name
+		} (${recap.happiestMonth.value.toFixed(2)})`
+		const worstMonthLabel = `${
+			recap.worstMonth.name
+		} (${recap.worstMonth.value.toFixed(2)})`
 
 		// TODO: Move to service
 		const output = `/tmp/recap2023-${ctx.from.id}.png`
@@ -37,7 +41,12 @@ recapController
 						text: recap.average.toFixed(2),
 						anchor: 'right'
 					},
-					{ x: 1320, y: 1048, text: `${recap.happierBy}%`, anchor: 'right' },
+					{
+						x: 1320,
+						y: 1048,
+						text: `${recap.happierBy.toFixed(0)}%`,
+						anchor: 'right'
+					},
 					{
 						x: 754,
 						y: 671,
