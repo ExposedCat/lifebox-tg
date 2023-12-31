@@ -1,6 +1,7 @@
 {
 	"state": {
-		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your social /profile\nSee your life quality /history\n\nPowered by @ExposedCatDev"
+		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your social /profile\nSee your life quality /history\n\nPowered by @ExposedCatDev",
+		"recap-2023-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2023.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days\n\nSpecial thanks to @cherikora for the design of these wonderful cards and help with ideas &lt;3"
 	},
 	"fetch": {
 		"profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
@@ -38,11 +39,12 @@
 		"customPoll": "Custom poll sent to ${success}/${total} groups",
 		"resendDone": "Poll re-sent to ${success}/${total} groups",
 		"jobStarted": "Job started…",
-		"jobStartedHere": "Job started for this group…"
+		"jobStartedHere": "Job started for this group…",
+		"waitRecap": "Analyzing your life in 2023, please wait..."
 	},
-  "debug": {
-    "json": "<code>${json}</code>"
-  },
+	"debug": {
+		"json": "<code>${json}</code>"
+	},
 	"error": {
 		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",
 		"invalidCustomPoll": "Poll was not specified",

@@ -1,8 +1,8 @@
-import type { DayRate } from '../../types/database.js'
 import type { Database } from '../../types/index.js'
 import { getAverageLifeQuality, getUserRates } from '../database/statistics.js'
+import { fetchUserRatesGraph } from '../database/user.graph.js'
 
-function getLongestSequences(rates: DayRate[]) {
+function getLongestSequences(rates: { value: number }[]) {
 	if (rates.length <= 1) {
 		return {
 			maxPositiveLength: rates.length,
@@ -69,13 +69,21 @@ async function getUserRecap(
 	const userAverage =
 		rates.reduce((sum, { value }) => sum + value, 0) / rates.length
 
+	const {
+		userDatasets: [{ points: lifeQuality }]
+	} = await fetchUserRatesGraph({
+		database,
+		userIds: [userId],
+		mode: 'halfYear'
+	})
+
 	return {
 		days: rates.length,
 		average: userAverage,
 		happierBy: ((userAverage - commonAverage) / commonAverage) * 100,
 		worstMonth: getMonth('worst', months),
 		happiestMonth: getMonth('happiest', months),
-		...getLongestSequences(rates)
+		...getLongestSequences(lifeQuality)
 	}
 }
 

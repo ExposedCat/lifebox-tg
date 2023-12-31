@@ -14,3 +14,4 @@ export {
 } from './send-poll-force.js'
 export { sendCustomPollController } from './custom-poll.js'
 export { recapController } from './recap.js'
+export { explainRecapController } from './explain-recap.js'
