@@ -1,3 +1,5 @@
+import type { Document } from 'mongodb'
+
 import type { Database } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 import type { DayRate } from '../../types/database.js'
@@ -73,25 +75,31 @@ async function getAverageLifeQuality(
 
 async function getUserRates(
 	database: Database['users'],
-	userId: number,
+	userId: number | null,
 	since: Date
 ) {
+	const stages: Document[] = [
+		$.match({
+			$expr: $.ne([$.size('$dayRates'), 0])
+		}),
+		$.unwind('dayRates'),
+		$.sort('dayRates.date', 1),
+		$.match({ 'dayRates.date': $.gte(since) }),
+		$.group({
+			_id: {
+				year: { $year: '$dayRates.date' },
+				month: { $month: '$dayRates.date' }
+			},
+			date: { $first: '$dayRates.date' },
+			average: $.avg('dayRates.value'),
+			rates: { $push: '$dayRates' }
+		})
+	]
+	if (userId !== null) {
+		stages.unshift($.match({ userId }))
+	}
 	return await database
-		.aggregate<{ date: Date; rates: DayRate[]; average: number }>([
-			$.match({ userId }),
-			$.unwind('dayRates'),
-			$.sort('dayRates.date', 1),
-			$.match({ 'dayRates.date': $.gte(since) }),
-			$.group({
-				_id: {
-					year: { $year: '$dayRates.date' },
-					month: { $month: '$dayRates.date' }
-				},
-				date: { $first: '$dayRates.date' },
-				average: { $avg: '$dayRates.value' },
-				rates: { $push: '$dayRates' }
-			})
-		])
+		.aggregate<{ date: Date; rates: DayRate[]; average: number }>(stages)
 		.toArray()
 }
 
