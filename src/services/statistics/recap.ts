@@ -1,5 +1,5 @@
 import type { Database } from '../../types/index.js'
-import { getAverageLifeQuality, getUserRates } from '../database/statistics.js'
+import { getUserRates } from '../database/statistics.js'
 import { fetchUserRatesGraph } from '../database/user.graph.js'
 
 function getLongestSequences(rates: { value: number }[]) {
@@ -61,11 +61,13 @@ async function getUserRecap(
 	userId: number,
 	year: number
 ) {
-	const commonAverage = await getAverageLifeQuality(database, null)
+	const commonMonths = await getUserRates(database, null, new Date(year, 0, 1))
+	const commonRates = commonMonths.flatMap(month => month.rates)
+	const commonAverage =
+		commonRates.reduce((sum, { value }) => sum + value, 0) / commonRates.length
 
 	const months = await getUserRates(database, userId, new Date(year, 0, 1))
 	const rates = months.flatMap(month => month.rates)
-
 	const userAverage =
 		rates.reduce((sum, { value }) => sum + value, 0) / rates.length
 
