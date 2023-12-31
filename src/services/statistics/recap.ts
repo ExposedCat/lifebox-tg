@@ -82,7 +82,7 @@ async function getUserRecap(
 	return {
 		days: rates.length,
 		average: userAverage,
-		happierBy: ((userAverage - commonAverage) / commonAverage) * 100,
+		happierBy: ((userAverage - commonAverage) / 5) * 100,
 		worstMonth: getMonth('worst', months),
 		happiestMonth: getMonth('happiest', months),
 		...getLongestSequences(lifeQuality)
