@@ -61,12 +61,22 @@ async function getUserRecap(
 	userId: number,
 	year: number
 ) {
-	const commonMonths = await getUserRates(database, null, new Date(year, 0, 1))
+	const commonMonths = await getUserRates(
+		database,
+		null,
+		new Date(year, 0, 1),
+		new Date(year + 1, 0, 1)
+	)
 	const commonRates = commonMonths.flatMap(month => month.rates)
 	const commonAverage =
 		commonRates.reduce((sum, { value }) => sum + value, 0) / commonRates.length
 
-	const months = await getUserRates(database, userId, new Date(year, 0, 1))
+	const months = await getUserRates(
+		database,
+		userId,
+		new Date(year, 0, 1),
+		new Date(year + 1, 0, 1)
+	)
 	const rates = months.flatMap(month => month.rates)
 	const userAverage =
 		rates.reduce((sum, { value }) => sum + value, 0) / rates.length

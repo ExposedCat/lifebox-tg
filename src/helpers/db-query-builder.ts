@@ -58,6 +58,7 @@ class DbQueryBuilder {
 	static sum = this.stage.bind(null, 'sum')
 	static avg = (arrayPath: string) => this.stage('avg', `$${arrayPath}`)
 	static gte = (value: unknown) => this.stage('gte', value)
+	static lt = (value: unknown) => this.stage('lt', value)
 	static divide = (dividend: unknown, divisor: unknown) =>
 		this.stage('divide', [dividend, divisor])
 	static inc = (field: string, value: number) =>

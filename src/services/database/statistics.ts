@@ -76,7 +76,8 @@ async function getAverageLifeQuality(
 async function getUserRates(
 	database: Database['users'],
 	userId: number | null,
-	since: Date
+	since: Date,
+	to: Date
 ) {
 	const stages: Document[] = [
 		$.match({
@@ -85,6 +86,7 @@ async function getUserRates(
 		$.unwind('dayRates'),
 		$.sort('dayRates.date', 1),
 		$.match({ 'dayRates.date': $.gte(since) }),
+		$.match({ 'dayRates.date': $.lt(to) }),
 		$.group({
 			_id: {
 				year: { $year: '$dayRates.date' },
