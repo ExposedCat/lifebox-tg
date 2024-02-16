@@ -79,9 +79,10 @@ export async function fetchUserRatesGraph(args: {
 			value: valuesAverage(data.slice(forceNonNegative(i - step), i + 1))
 		}))
 
-	const userDatasets: Dataset[] = users.map(it => ({
-		label: it.name ?? `User#${it.userId}`,
-		points: mapToAverage(it.dayRates)
+	const userDatasets: Dataset[] = users.map(user => ({
+		userId: user.userId,
+		label: user.name ?? `User#${user.userId}`,
+		points: mapToAverage(user.dayRates)
 	}))
 	const averagePoints: Point[] = mapToAverage(average)
 

@@ -24,7 +24,7 @@ function makeDatasetData(points: Point[], labels: Set<string>) {
 
 type Point = { date: Date; value: number }
 
-export type Dataset = { label: string; points: Point[] }
+export type Dataset = { userId: number; label: string; points: Point[] }
 
 async function generateChart(userDatasets: Dataset[], averagePoints: Point[]) {
 	const labels = new Set(

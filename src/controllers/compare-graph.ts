@@ -29,7 +29,10 @@ controller
 			userIds: allUserIds,
 			mode: 'halfYear'
 		})
-		const chartFile = await generateChart(userDatasets, averagePoints)
+		const orderedDatasets = allUserIds.map(
+			userId => userDatasets.find(dataset => dataset.userId === userId)!
+		)
+		const chartFile = await generateChart(orderedDatasets, averagePoints)
 		await ctx.editMessageMedia(
 			{
 				type: 'photo',
