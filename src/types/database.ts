@@ -3,6 +3,11 @@ import type { Collection } from 'mongodb'
 type Group = {
 	groupId: number
 	isChannel: boolean
+	settings: {
+		tagUsers: string[]
+		receiveCustomPolls: boolean
+		locale: 'en' | 'ua' | 'ru'
+	}
 }
 
 type Poll = {
