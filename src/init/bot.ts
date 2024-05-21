@@ -41,6 +41,8 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.social)
 	bot.use(handlers.recapController)
 	bot.use(handlers.explainRecapController)
+	bot.use(handlers.groupSettings)
+
 	bot.use(handlers.groupTextMessage)
 }
 

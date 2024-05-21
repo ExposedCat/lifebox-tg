@@ -1,7 +1,7 @@
 import type { AnyBulkWriteOperation } from 'mongodb'
 
 import type { Database, User } from '../types/index.js'
-import { connectToDb } from '../config/index.js'
+import { connectToDb } from '../init/index.js'
 import { loadEnv } from '../helpers/index.js'
 
 loadEnv()

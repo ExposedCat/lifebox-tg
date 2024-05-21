@@ -19,11 +19,11 @@ async function sendInitialPoll(args: { api: Api; i18n: I18n; group: Group }) {
 		group.groupId,
 		text('question'),
 		[
-			text('option.perfect'),
-			text('option.one'),
-			text('option.neutral'),
-			text('option.minusOne'),
-			text('option.awful')
+			{ text: text('option.perfect') },
+			{ text: text('option.one') },
+			{ text: text('option.neutral') },
+			{ text: text('option.minusOne') },
+			{ text: text('option.awful') }
 		],
 		{ is_anonymous: false }
 	)

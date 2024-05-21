@@ -1,5 +1,5 @@
 import type { Bot, Database } from '../types/index.js'
-import { startApp } from '../config/index.js'
+import { startApp } from '../init/index.js'
 import { loadEnv } from '../helpers/index.js'
 
 loadEnv()

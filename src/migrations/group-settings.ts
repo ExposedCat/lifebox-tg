@@ -1,5 +1,5 @@
 import type { Database } from '../types/index.js'
-import { connectToDb } from '../config/index.js'
+import { connectToDb } from '../init/index.js'
 import { loadEnv } from '../helpers/index.js'
 
 loadEnv()
@@ -11,8 +11,7 @@ async function migrate(database: Database['groups']) {
 			$set: {
 				settings: {
 					tagUsers: [],
-					receiveCustomPolls: false,
-					locale: 'en'
+					receiveCustomPolls: false
 				}
 			}
 		}

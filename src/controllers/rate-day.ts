@@ -12,7 +12,11 @@ controller.on('poll_answer', async ctx => {
 		if (!poll) {
 			return
 		}
-		const userId = ctx.pollAnswer.user.id
+		const userId = ctx.pollAnswer.user?.id
+		if (!userId) {
+			console.error('Poll answer without user id', ctx.pollAnswer)
+			return
+		}
 		const option = ctx.pollAnswer.option_ids[0]
 		const value = [2, 1, 0, -1, -2][option]
 		const date = poll.date

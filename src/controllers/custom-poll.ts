@@ -18,7 +18,7 @@ function sendCustomPollController(i18n: I18n) {
 				await ctx.text('error.invalidCustomPoll')
 				return
 			}
-			if (ctx.from.id === Number(process.env.ADMIN_ID)) {
+			if (ctx.from.id !== Number(process.env.ADMIN_ID)) {
 				await ctx.text('error.noRightsForCustomPoll')
 				return
 			}
@@ -40,14 +40,15 @@ function sendCustomPollController(i18n: I18n) {
 
 			const groups = fetchGroups(ctx.db.groups)
 			let totalGroups = 0
+			let globalTotalGroups = 0
 			let success = 0
 			while (await groups.hasNext()) {
 				const group = await groups.next()
 				if (!group) {
 					break
 				}
-				if (group.isChannel) {
-					// TODO: Implement settings before sending custom polls there
+				globalTotalGroups += 1
+				if (!group.settings.receiveCustomPolls) {
 					continue
 				}
 				totalGroups += 1
@@ -64,7 +65,11 @@ function sendCustomPollController(i18n: I18n) {
 				}
 				success += 1
 			}
-			await ctx.text('result.customPoll', { total: totalGroups, success })
+			await ctx.text('result.customPoll', {
+				total: totalGroups,
+				success,
+				globalTotal: globalTotalGroups
+			})
 		})
 	return controller
 }

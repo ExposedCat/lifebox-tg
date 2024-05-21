@@ -6,7 +6,6 @@ type Group = {
 	settings: {
 		tagUsers: string[]
 		receiveCustomPolls: boolean
-		locale: 'en' | 'ua' | 'ru'
 	}
 }
 

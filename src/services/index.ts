@@ -2,7 +2,7 @@ export { createReplyWithTextFunc } from './telegram/context.js'
 export { startSendPollJob } from './telegram/send-poll-job.js'
 export { getMessageAction } from './telegram/get-message-action.js'
 
-export { createGroupIfNotExists, fetchGroups } from './database/group.js'
+export { createGroupIfNotExists, fetchGroups } from './database/group.crud.js'
 export {
 	createUserIfNotExists,
 	updateUserCredits,

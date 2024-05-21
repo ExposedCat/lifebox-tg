@@ -16,3 +16,18 @@ export async function createGroupIfNotExists(
 export function fetchGroups(database: Database['groups']) {
 	return database.find<Group>({})
 }
+
+export function getGroup(database: Database['groups'], groupId: number) {
+	return database.findOne<Group>({ groupId })
+}
+
+export function updateGroupSettings(
+	database: Database['groups'],
+	group: Group,
+	changes: Partial<Group['settings']>
+) {
+	return database.updateOne(
+		{ groupId: group.groupId },
+		{ $set: { settings: { ...group.settings, ...changes } } }
+	)
+}
