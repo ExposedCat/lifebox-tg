@@ -6,6 +6,7 @@ import type { I18n } from '@grammyjs/i18n/dist/source'
 import type { Database, Group } from '../../types/index.js'
 import { TelegramApiError } from '../../types/index.js'
 import { fetchGroups } from '../index.js'
+import { getUserNames } from '../database/user.names.js'
 
 function getChannelActionUrl(messageId: number | string) {
 	return `https://t.me/${process.env.PUBLIC_POLLS_CHAT_NAME}/${messageId}`
@@ -41,13 +42,14 @@ function isChatNotFoundError(object: unknown) {
 }
 
 async function resendPoll(args: {
+	users: Database['users']
 	group: Group
 	api: Api
 	i18n: I18n
 	messageId: number
 	firstGroupId: number
 }) {
-	const { api, i18n, group, firstGroupId, messageId } = args
+	const { users, api, i18n, group, firstGroupId, messageId } = args
 	if (group.isChannel) {
 		await api.sendMessage(
 			group.groupId,
@@ -68,6 +70,26 @@ async function resendPoll(args: {
 		)
 	} else {
 		await api.forwardMessage(group.groupId, firstGroupId, messageId)
+		if (group.settings.tagUsers.length !== 0) {
+			const names = await getUserNames(
+				users,
+				group.settings.tagUsers.map(user => user.userId)
+			)
+			await api.sendMessage(
+				group.groupId,
+				i18n.t(process.env.POLL_LANG, 'job.reminder', {
+					users: group.settings.tagUsers
+						.map(user =>
+							i18n.t(process.env.POLL_LANG, 'partial.userTag', {
+								id: user.userId,
+								name: names[user.userId]
+							})
+						)
+						.join(', ')
+				}),
+				{ parse_mode: 'HTML' }
+			)
+		}
 	}
 }
 
@@ -149,7 +171,14 @@ async function sendPoll(
 					return
 				}
 			}
-			await resendPoll({ api, i18n, group, firstGroupId, messageId })
+			await resendPoll({
+				users: database.users,
+				api,
+				i18n,
+				group,
+				firstGroupId,
+				messageId
+			})
 		} catch (object) {
 			repeat = isChatNotFoundError(object)
 		}

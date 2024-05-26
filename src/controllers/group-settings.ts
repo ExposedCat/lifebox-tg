@@ -3,10 +3,12 @@ import { Composer } from 'grammy'
 import type { CustomContext } from '../types/index.js'
 import {
 	getGroup,
+	updateGroup,
 	updateGroupSettings
 } from '../services/database/group.crud.js'
 
 export const settingsController = new Composer<CustomContext>()
+
 settingsController
 	.chatType(['supergroup', 'group'])
 	.command('settings', async ctx => {
@@ -22,7 +24,6 @@ settingsController
 		}
 	})
 
-export const toggleCustomPollsController = new Composer<CustomContext>()
 settingsController
 	.chatType(['supergroup', 'group'])
 	.command('toggle_custom', async ctx => {
@@ -39,4 +40,38 @@ settingsController
 			})
 			await ctx.text('result.settingChanged')
 		}
+	})
+
+settingsController
+	.chatType(['supergroup', 'group'])
+	.command('toggle_reminder', async ctx => {
+		const userId = ctx.from.id
+
+		const group = await getGroup(ctx.db.groups, ctx.chat.id)
+		if (!group) {
+			await ctx.text('error.chatNotFound')
+			return
+		}
+
+		await updateGroup(ctx.db.groups, group, [
+			{
+				$set: {
+					'settings.tagUsers': {
+						$cond: {
+							if: { $in: [{ userId }, '$settings.tagUsers'] },
+							then: {
+								$filter: {
+									input: '$settings.tagUsers',
+									cond: { $ne: ['$$this.userId', userId] }
+								}
+							},
+							else: {
+								$concatArrays: ['$settings.tagUsers', [{ userId }]]
+							}
+						}
+					}
+				}
+			}
+		])
+		await ctx.text('result.settingChanged')
 	})

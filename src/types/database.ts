@@ -4,7 +4,7 @@ type Group = {
 	groupId: number
 	isChannel: boolean
 	settings: {
-		tagUsers: string[]
+		tagUsers: { userId: number }[]
 		receiveCustomPolls: boolean
 	}
 }

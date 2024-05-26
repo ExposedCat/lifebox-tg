@@ -54,6 +54,7 @@ function sendCustomPollController(i18n: I18n) {
 				totalGroups += 1
 				try {
 					await resendPoll({
+						users: ctx.db.users,
 						group,
 						api: ctx.api,
 						i18n,
