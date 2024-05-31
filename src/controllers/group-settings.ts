@@ -6,6 +6,7 @@ import {
 	updateGroup,
 	updateGroupSettings
 } from '../services/database/group.crud.js'
+import { getUserNames } from '../services/database/user.names.js'
 
 export const settingsController = new Composer<CustomContext>()
 
@@ -16,10 +17,19 @@ settingsController
 		if (!group) {
 			await ctx.text('error.chatNotFound')
 		} else {
+			const userNames = await getUserNames(
+				ctx.db.users,
+				group.settings.tagUsers.map(user => user.userId)
+			)
 			await ctx.text('state.groupSettings', {
 				customPolls: ctx.i18n.t(
 					`partial.boolean.${group.settings.receiveCustomPolls}`
-				)
+				),
+				tagUsers: group.settings.tagUsers
+					.map(user =>
+						ctx.i18n.t('partial.fakeUserTag', { name: userNames[user.userId] })
+					)
+					.join(', ')
 			})
 		}
 	})
@@ -38,7 +48,9 @@ settingsController
 			await updateGroupSettings(ctx.db.groups, group, {
 				receiveCustomPolls: !group.settings.receiveCustomPolls
 			})
-			await ctx.text('result.settingChanged')
+			await ctx.text('result.settingChanged', {
+				newValue: !group.settings.receiveCustomPolls
+			})
 		}
 	})
 
