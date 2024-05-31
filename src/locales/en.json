@@ -68,6 +68,11 @@
     "noRightsForSettings": "You have no rights to change settings",
     "usersNotFound": "Everyone in this group has 0 social credits. What a community...",
     "chatNotFound": "Chat not found",
-    "cannotCompareSelf": "Your history is already on this graph"
+    "cannotCompareSelf": "Your history is already on this graph",
+    "format": {
+      "setting": "Invalid format\nUsage: <code>/setting ID on|off</code>\nExample: <code>/setting custom_polls on</code>",
+      "settingValue": "Invalid format\nSetting value must be either 'on' or 'off'\nExample: <code>/setting custom_polls on</code>",
+      "settingID": "Invalid format\nSetting ID must be taken from /settings message\nExample: <code>/setting custom_polls on</code>"
+    }
   }
 }

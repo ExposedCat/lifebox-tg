@@ -68,6 +68,11 @@
     "noRightsForSettings": "Тебе не разрешено изменять настройки группы",
     "usersNotFound": "Все в этой группе имеют социальный рейтинг 0. Что за сообщество...",
     "chatNotFound": "Группа не найдена",
-    "cannotCompareSelf": "Твоя история уже есть на этом графике"
+    "cannotCompareSelf": "Твоя история уже есть на этом графике",
+    "format": {
+      "setting": "Некорректынй формат\nИспользование: <code>/setting ID on|off</code>\nПример: <code>/setting custom_polls on</code>",
+      "settingValue": "Некорректный формат\nЗначение настроки должно быть 'on' или 'off'\nПример: <code>/setting custom_polls on</code>",
+      "settingID": "Некорректный формат\nID настроки должен быть взят из сообщения /settings\nПример: <code>/setting custom_polls on</code>"
+    }
   }
 }
