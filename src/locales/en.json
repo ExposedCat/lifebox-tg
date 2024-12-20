@@ -1,78 +1,78 @@
 {
-  "state": {
-    "started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your social /profile\nSee your life quality /history\n\nPowered by @ExposedCatDev",
-    "recap-2023-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2023.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days\n\nSpecial thanks to @cherikora for the design of these wonderful cards and help with ideas &lt;3",
-    "groupSettings": "Group Settings\n\n- Receive custom polls: ${customPolls} (<code>custom_polls</code>)\n- Remind to rate a day: ${tagUsers} (<code>reminder</code>)\n\nTo change a setting, use command <code>/setting ID on|off</code>. ID is provided next to each setting"
-  },
-  "fetch": {
-    "profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
-    "rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
-  },
-  "partial": {
-    "icon": {
-      "low": "🈵",
-      "normal": "🈶",
-      "high": "🈯️"
-    },
-    "label": {
-      "credits": "会",
-      "lifeQuality": "点"
-    },
-    "fakeUserTag": "${name}",
-    "userTag": "<a href=\"tg://user?id=${id}\">@${name}</a>",
-    "userLine": "${position}. ${name} - ${value} ${label} ${icon}\n",
-    "userHistoryLine": "${rate}\n",
-    "boolean": {
-      "true": "🟢",
-      "false": "🔴"
-    },
-    "enabled": {
-      "true": "Enabled",
-      "false": "Disabled"
-    }
-  },
-  "poll": {
-    "channelQuestion": "Rate today from -2 (awful) to +2 (perfect)",
-    "question": "Rate today",
-    "option": {
-      "perfect": "+2 (perfect)",
-      "one": "+1",
-      "neutral": "0 (neutral)",
-      "minusOne": "-1",
-      "awful": "-2 (awful)"
-    }
-  },
-  "job": {
-    "reminder": "Don't forget to rate today, ${users}"
-  },
-  "button": {
-    "channelAction": "View poll",
-    "compare": "Compare"
-  },
-  "result": {
-    "customPoll": "Custom poll sent to ${success}/${total}/${globalTotal} groups",
-    "resendDone": "Poll re-sent to ${success}/${total} groups",
-    "jobStarted": "Job started…",
-    "jobStartedHere": "Job started for this group…",
-    "waitRecap": "Analyzing your life in 2023, please wait...",
-    "settingChanged": "Setting changed: ${newValue}"
-  },
-  "debug": {
-    "json": "<code>${json}</code>"
-  },
-  "error": {
-    "profileNotFound": "E: Profile not found\nTry to send any non-command message?",
-    "invalidCustomPoll": "Poll was not specified",
-    "failedToProxyPoll": "Poll cannot be proxied: ${error}",
-    "noRightsForCustomPoll": "You have no rights to send custom polls",
-    "noRightsForSettings": "You have no rights to change settings",
-    "usersNotFound": "Everyone in this group has 0 social credits. What a community...",
-    "chatNotFound": "Chat not found",
-    "cannotCompareSelf": "Your history is already on this graph",
-    "format": {
-      "setting": "Invalid format\nUsage: <code>/setting ID on|off</code>\nExample: <code>/setting custom_polls on</code>",
-      "settingValue": "Invalid format\nSetting value must be either 'on' or 'off'\nExample: <code>/setting custom_polls on</code>",
-      "settingID": "Invalid format\nSetting ID must be taken from /settings message\nExample: <code>/setting custom_polls on</code>"
-    }
-  }
+	"state": {
+		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your social /profile\nSee your life quality /history\n\nPowered by @ExposedCatDev",
+		"recap-2023-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2023.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days\n\nSpecial thanks to @cherikora for the design of these wonderful cards and help with ideas &lt;3",
+		"groupSettings": "Group Settings\n\n- Receive custom polls: ${customPolls} (<code>custom_polls</code>)\n- Remind to rate a day: ${tagUsers} (<code>reminder</code>)\n\nTo change a setting, use command <code>/setting ID on|off</code>. ID is provided next to each setting"
+	},
+	"fetch": {
+		"profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
+		"rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
+	},
+	"partial": {
+		"icon": {
+			"low": "🈵",
+			"normal": "🈶",
+			"high": "🈯️"
+		},
+		"label": {
+			"credits": "会",
+			"lifeQuality": "点"
+		},
+		"fakeUserTag": "${name}",
+		"userTag": "<a href=\"tg://user?id=${id}\">@${name}</a>",
+		"userLine": "${position}. ${name} - ${value} ${label} ${icon}\n",
+		"userHistoryLine": "${rate}\n",
+		"boolean": {
+			"true": "🟢",
+			"false": "🔴"
+		},
+		"enabled": {
+			"true": "Enabled",
+			"false": "Disabled"
+		}
+	},
+	"poll": {
+		"channelQuestion": "🌲 Rate today from -2 (awful) to +2 (perfect)",
+		"question": "Rate today",
+		"option": {
+			"perfect": "+2 (perfect)",
+			"one": "+1",
+			"neutral": "0 (neutral)",
+			"minusOne": "-1",
+			"awful": "-2 (awful)"
+		}
+	},
+	"job": {
+		"reminder": "Don't forget to rate today, ${users}"
+	},
+	"button": {
+		"channelAction": "View poll",
+		"compare": "Compare"
+	},
+	"result": {
+		"customPoll": "Custom poll sent to ${success}/${total}/${globalTotal} groups",
+		"resendDone": "Poll re-sent to ${success}/${total} groups",
+		"jobStarted": "Job started…",
+		"jobStartedHere": "Job started for this group…",
+		"waitRecap": "Analyzing your life in 2023, please wait...",
+		"settingChanged": "Setting changed: ${newValue}"
+	},
+	"debug": {
+		"json": "<code>${json}</code>"
+	},
+	"error": {
+		"profileNotFound": "E: Profile not found\nTry to send any non-command message?",
+		"invalidCustomPoll": "Poll was not specified",
+		"failedToProxyPoll": "Poll cannot be proxied: ${error}",
+		"noRightsForCustomPoll": "You have no rights to send custom polls",
+		"noRightsForSettings": "You have no rights to change settings",
+		"usersNotFound": "Everyone in this group has 0 social credits. What a community...",
+		"chatNotFound": "Chat not found",
+		"cannotCompareSelf": "Your history is already on this graph",
+		"format": {
+			"setting": "Invalid format\nUsage: <code>/setting ID on|off</code>\nExample: <code>/setting custom_polls on</code>",
+			"settingValue": "Invalid format\nSetting value must be either 'on' or 'off'\nExample: <code>/setting custom_polls on</code>",
+			"settingID": "Invalid format\nSetting ID must be taken from /settings message\nExample: <code>/setting custom_polls on</code>"
+		}
+	}
 }

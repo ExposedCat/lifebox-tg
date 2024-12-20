@@ -44,7 +44,7 @@ controller
 							ctx.i18n.t('button.compare'),
 							`compare_${allUserIds.join('_')}`
 						)
-				  }
+					}
 				: undefined
 		)
 	})
