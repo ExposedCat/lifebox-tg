@@ -1,5 +1,6 @@
-import { startBot, connectToDb } from './index.js'
 import { loadEnv, validateEnv } from '../helpers/index.js'
+import { startApi } from './api.js'
+import { connectToDb, startBot } from './index.js'
 
 async function startApp() {
 	try {
@@ -19,6 +20,14 @@ async function startApp() {
 		process.exit(2)
 	}
 
+	let api
+	try {
+		api = startApi(database)
+	} catch (error) {
+		console.error('Error occurred while starting the API:', error)
+		process.exit(3)
+	}
+
 	let bot
 	try {
 		bot = startBot(database)
@@ -28,7 +37,7 @@ async function startApp() {
 	}
 
 	console.info('App started')
-	return { bot, database }
+	return { api, bot, database }
 }
 
 export { startApp }
