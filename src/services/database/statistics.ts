@@ -1,8 +1,8 @@
 import type { Document } from 'mongodb'
 
-import type { Database } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 import type { DayRate } from '../../types/database.js'
+import type { Database } from '../../types/index.js'
 
 async function getAverageCredits(database: Database['users'], groupId: number) {
 	const aggregation = database.aggregate<{ median: number }>([
@@ -73,7 +73,7 @@ async function getAverageLifeQuality(
 	return data?.average || 0
 }
 
-async function getUserRates(
+async function getUserMonthlyRates(
 	database: Database['users'],
 	userId: number | null,
 	since: Date,
@@ -105,4 +105,34 @@ async function getUserRates(
 		.toArray()
 }
 
-export { getAverageCredits, getAverageLifeQuality, getUserRates }
+async function getUserDailyRates(
+	database: Database['users'],
+	userId: number | null,
+	since: Date,
+	to: Date
+) {
+	const stages: Document[] = [
+		$.match({
+			$expr: $.ne([$.size('$dayRates'), 0])
+		}),
+		$.unwind('dayRates'),
+		$.sort('dayRates.date', 1),
+		$.match({ 'dayRates.date': $.gte(since) }),
+		$.match({ 'dayRates.date': $.lt(to) }),
+		{ $replaceRoot: { newRoot: '$dayRates' } },
+		$.project({ date: 1, value: 1 })
+	]
+	if (userId !== null) {
+		stages.unshift($.match({ userId }))
+	}
+	return await database
+		.aggregate<{ date: Date; value: number }>(stages)
+		.toArray()
+}
+
+export {
+	getAverageCredits,
+	getAverageLifeQuality,
+	getUserMonthlyRates,
+	getUserDailyRates
+}

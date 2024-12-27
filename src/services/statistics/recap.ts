@@ -1,38 +1,63 @@
 import type { Database } from '../../types/index.js'
-import { getUserRates } from '../database/statistics.js'
+import {
+	getUserDailyRates,
+	getUserMonthlyRates
+} from '../database/statistics.js'
 import { fetchUserRatesGraph } from '../database/user.graph.js'
 
-function getLongestSequences(rates: { value: number }[]) {
-	if (rates.length <= 1) {
-		return {
-			maxPositiveLength: rates.length,
-			maxNegativeLength: rates.length,
-			maxStraightLength: rates.length
+function getLongestRateStreak(dataPoints: { date: Date }[]) {
+	if (dataPoints.length === 0) return 0
+
+	let maxLength = 1
+	let currentLength = 1
+
+	for (let i = 1; i < dataPoints.length; i++) {
+		const diffTime =
+			dataPoints[i].date.getTime() - dataPoints[i - 1].date.getTime()
+		if (diffTime <= 24 * 60 * 60 * 1000) {
+			currentLength++
+			if (currentLength > maxLength) {
+				maxLength = currentLength
+			}
+		} else {
+			currentLength = 1
 		}
 	}
-	let maxPositiveLength = 0
-	let maxStraightLength = 0
-	let maxNegativeLength = 0
 
-	let positiveLength = 0
-	let straightLength = 0
-	let negativeLength = 0
+	return maxLength
+}
 
-	let lastValue = rates[0].value
+function getLongestValueStreaks(dataPoints: { value: number }[]) {
+	if (dataPoints.length === 0) return { positive: 0, neutral: 0, negative: 0 }
 
-	for (const rate of rates.slice(1)) {
-		positiveLength = rate.value > lastValue ? positiveLength + 1 : 1
-		straightLength = rate.value === lastValue ? straightLength + 1 : 1
-		negativeLength = rate.value < lastValue ? negativeLength + 1 : 1
+	let currentPositive = dataPoints[0].value > 0 ? 1 : 0
+	let currentNeutral = dataPoints[0].value === 0 ? 1 : 0
+	let currentNegative = dataPoints[0].value < 0 ? 1 : 0
 
-		maxPositiveLength = Math.max(maxPositiveLength, positiveLength)
-		maxStraightLength = Math.max(maxStraightLength, straightLength)
-		maxNegativeLength = Math.max(maxNegativeLength, negativeLength)
+	let positiveStreak = currentPositive
+	let neutralStreak = currentNeutral
+	let negativeStreak = currentNegative
 
-		lastValue = rate.value
+	for (const { value } of dataPoints.slice(1)) {
+		if (value > 0) {
+			currentPositive += 1
+			positiveStreak = Math.max(positiveStreak, currentPositive)
+			currentNeutral = 0
+			currentNegative = 0
+		} else if (value === 0) {
+			currentNeutral += 1
+			neutralStreak = Math.max(neutralStreak, currentNeutral)
+			currentPositive = 0
+			currentNegative = 0
+		} else {
+			currentNegative += 1
+			negativeStreak = Math.max(negativeStreak, currentNegative)
+			currentPositive = 0
+			currentNeutral = 0
+		}
 	}
 
-	return { maxPositiveLength, maxNegativeLength, maxStraightLength }
+	return { positiveStreak, neutralStreak, negativeStreak }
 }
 
 function getMonth(
@@ -61,7 +86,7 @@ async function getUserRecap(
 	userId: number,
 	year: number
 ) {
-	const commonMonths = await getUserRates(
+	const commonMonths = await getUserMonthlyRates(
 		database,
 		null,
 		new Date(year, 0, 1),
@@ -71,31 +96,35 @@ async function getUserRecap(
 	const commonAverage =
 		commonRates.reduce((sum, { value }) => sum + value, 0) / commonRates.length
 
-	const months = await getUserRates(
+	const rawMonths = await getUserMonthlyRates(
 		database,
 		userId,
 		new Date(year, 0, 1),
 		new Date(year + 1, 0, 1)
 	)
-	const rates = months.flatMap(month => month.rates)
+	const rates = rawMonths.flatMap(month => month.rates)
 	const userAverage =
 		rates.reduce((sum, { value }) => sum + value, 0) / rates.length
 
-	const {
-		userDatasets: [{ points: lifeQuality }]
-	} = await fetchUserRatesGraph({
+	const rawDays = await getUserDailyRates(
 		database,
-		userIds: [userId],
-		mode: 'halfYear'
-	})
+		userId,
+		new Date(year, 0, 1),
+		new Date(year + 1, 0, 1)
+	)
+	const rateStreak = getLongestRateStreak(rawDays)
+	const valueStreaks = getLongestValueStreaks(rawDays)
 
 	return {
 		days: rates.length,
 		average: userAverage,
 		happierBy: ((userAverage - commonAverage) / 5) * 100,
-		worstMonth: getMonth('worst', months),
-		happiestMonth: getMonth('happiest', months),
-		...getLongestSequences(lifeQuality)
+		rawMonths,
+		rawDays,
+		rateStreak,
+		...valueStreaks,
+		worstMonth: getMonth('worst', rawMonths),
+		happiestMonth: getMonth('happiest', rawMonths)
 	}
 }
 

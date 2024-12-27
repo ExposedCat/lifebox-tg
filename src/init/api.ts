@@ -13,7 +13,7 @@ export function startApi(database: Database) {
 		res.statusCode = 200
 		res.setHeader('Content-Type', 'application/json; charset=UTF-8')
 		try {
-			const recap = await getUserRecap(database.users, Number(userId), 2024)
+			const recap = await getUserRecap(database.users, Number(userId), 2022)
 			res.end(JSON.stringify({ ok: true, data: recap, error: null }))
 		} catch (error) {
 			res.end(JSON.stringify({ ok: false, data: null, error: `${error}` }))
