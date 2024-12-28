@@ -89,7 +89,7 @@ async function getUserRecap(
 	const commonMonths = await getUserMonthlyRates(
 		database,
 		null,
-		new Date(year, 0, 1),
+		new Date(year, 0, 1, 1),
 		new Date(year + 1, 0, 1)
 	)
 	const commonRates = commonMonths.flatMap(month => month.rates)
@@ -99,7 +99,7 @@ async function getUserRecap(
 	const rawMonths = await getUserMonthlyRates(
 		database,
 		userId,
-		new Date(year, 0, 1),
+		new Date(year, 0, 1, 1),
 		new Date(year + 1, 0, 1)
 	)
 	const rates = rawMonths.flatMap(month => month.rates)
@@ -109,7 +109,7 @@ async function getUserRecap(
 	const rawDays = await getUserDailyRates(
 		database,
 		userId,
-		new Date(year, 0, 1),
+		new Date(year, 0, 1, 1),
 		new Date(year + 1, 0, 1)
 	)
 	const rateStreak = getLongestRateStreak(rawDays)
