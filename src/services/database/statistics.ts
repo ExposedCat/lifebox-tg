@@ -93,7 +93,21 @@ async function getUserMonthlyRates(
 				month: { $month: '$dayRates.date' }
 			},
 			date: { $first: '$dayRates.date' },
-			average: $.avg('dayRates.value'),
+			positiveCount: {
+				$sum: {
+					$cond: [{ $gt: ['$dayRates.value', 0] }, 1, 0]
+				}
+			},
+			negativeCount: {
+				$sum: {
+					$cond: [{ $lt: ['$dayRates.value', 0] }, 1, 0]
+				}
+			},
+			neutralCount: {
+				$sum: {
+					$cond: [{ $eq: ['$dayRates.value', 0] }, 1, 0]
+				}
+			},
 			rates: { $push: '$dayRates' }
 		})
 	]
