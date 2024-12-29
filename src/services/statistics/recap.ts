@@ -132,7 +132,7 @@ async function getUserRecap(
 		commonAverage,
 		happierBy: (userAverage - commonAverage) * 100,
 		averagePrev: userAveragePrev,
-		happierPrevBy: (userAveragePrev - userAverage) * 100,
+		happierPrevBy: (userAverage - userAveragePrev) * 100,
 		rawMonths,
 		rawDays,
 		rateStreak,
