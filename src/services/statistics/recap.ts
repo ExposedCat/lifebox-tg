@@ -106,6 +106,17 @@ async function getUserRecap(
 	const userAverage =
 		rates.reduce((sum, { value }) => sum + value, 0) / rates.length
 
+	const rawMonthsPrev = await getUserMonthlyRates(
+		database,
+		userId,
+		new Date(year - 1, 0, 1, 1),
+		new Date(year - 1 + 1, 0, 1)
+	)
+	const userAveragePrev =
+		rawMonthsPrev
+			.flatMap(month => month.rates)
+			.reduce((sum, { value }) => sum + value, 0) / rates.length
+
 	const rawDays = await getUserDailyRates(
 		database,
 		userId,
@@ -118,7 +129,8 @@ async function getUserRecap(
 	return {
 		days: rates.length,
 		average: userAverage,
-		happierBy: ((userAverage - commonAverage) / 5) * 100,
+		happierBy: (userAverage - commonAverage) * 100,
+		happierPrevBy: (userAveragePrev - userAverage) * 100,
 		rawMonths,
 		rawDays,
 		rateStreak,
