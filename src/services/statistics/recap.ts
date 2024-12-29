@@ -64,20 +64,20 @@ function getMonth(
 	parameter: 'worst' | 'happiest',
 	months: { date: Date; average: number }[]
 ) {
-	let lowestAverage: number = parameter === 'worst' ? 3 : -3
+	let average: number = parameter === 'worst' ? 3 : -3
 	let lowestDate: Date = new Date()
 	for (const month of months) {
 		if (
-			(parameter === 'worst' && month.average <= lowestAverage) ||
-			(parameter === 'happiest' && month.average >= lowestAverage)
+			(parameter === 'worst' && month.average <= average) ||
+			(parameter === 'happiest' && month.average >= average)
 		) {
 			lowestDate = month.date
-			lowestAverage = month.average
+			average = month.average
 		}
 	}
 	return {
-		name: lowestDate.toLocaleString('default', { month: 'long' }),
-		value: lowestAverage
+		index: lowestDate.getMonth(),
+		value: average
 	}
 }
 
