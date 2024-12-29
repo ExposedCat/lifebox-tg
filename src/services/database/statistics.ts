@@ -108,6 +108,7 @@ async function getUserMonthlyRates(
 					$cond: [{ $eq: ['$dayRates.value', 0] }, 1, 0]
 				}
 			},
+			average: $.avg('dayRates.value'),
 			rates: { $push: '$dayRates' }
 		})
 	]
