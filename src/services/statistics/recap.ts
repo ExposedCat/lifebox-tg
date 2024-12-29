@@ -129,7 +129,9 @@ async function getUserRecap(
 	return {
 		days: rates.length,
 		average: userAverage,
+		commonAverage,
 		happierBy: (userAverage - commonAverage) * 100,
+		averagePrev: userAveragePrev,
 		happierPrevBy: (userAveragePrev - userAverage) * 100,
 		rawMonths,
 		rawDays,
