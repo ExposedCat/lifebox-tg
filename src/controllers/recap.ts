@@ -9,7 +9,17 @@ const recapController = new Composer<CustomContext>()
 recapController
 	.chatType(['supergroup', 'group'])
 	.command('wrapped', async ctx => {
-		await ctx.text('state.wrapped')
+		await ctx.text(
+			'state.wrapped',
+			{},
+			{
+				link_preview_options: {
+					is_disabled: false,
+					prefer_large_media: true,
+					show_above_text: true
+				}
+			}
+		)
 		// FIXME: Send miniapp
 		//
 		// const recap = await getUserRecap(ctx.db.users, ctx.from.id, 2023)
