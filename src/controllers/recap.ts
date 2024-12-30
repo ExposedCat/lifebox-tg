@@ -8,7 +8,8 @@ import type { CustomContext } from '../types/index.js'
 const recapController = new Composer<CustomContext>()
 recapController
 	.chatType(['supergroup', 'group'])
-	.command('recap', async ctx => {
+	.command('wrapped', async ctx => {
+		await ctx.text('state.wrapped')
 		// FIXME: Send miniapp
 		//
 		// const recap = await getUserRecap(ctx.db.users, ctx.from.id, 2023)
