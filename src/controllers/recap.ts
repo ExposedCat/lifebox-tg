@@ -7,7 +7,7 @@ import type { CustomContext } from '../types/index.js'
 
 const recapController = new Composer<CustomContext>()
 recapController
-	.chatType(['supergroup', 'group'])
+	.chatType(['supergroup', 'group', 'private'])
 	.command('wrapped', async ctx => {
 		await ctx.text(
 			'state.wrapped',
