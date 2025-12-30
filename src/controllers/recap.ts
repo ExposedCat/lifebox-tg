@@ -22,7 +22,7 @@ recapController
 		)
 		// FIXME: Send miniapp
 		//
-		// const recap = await getUserRecap(ctx.db.users, ctx.from.id, 2023)
+		// const recap = await getUserRecap(ctx.db.users, ctx.from.id, 2024)
 		// const daysOffset = recap.days < 10 ? 37 : recap.days < 100 ? 21 : 0
 		// const averageOffset = recap.average < 0 ? -20 : 0
 		// const happiestMonthLabel = `${
@@ -32,11 +32,11 @@ recapController
 		// 	recap.worstMonth.name
 		// } (${recap.worstMonth.value.toFixed(2)})`
 		// // TODO: Move to service
-		// const output = `/tmp/recap2023-${ctx.from.id}.png`
+		// const output = `/tmp/recap2024-${ctx.from.id}.png`
 		// const hint = await ctx.text('result.waitRecap')
 		// if (!fs.existsSync(output)) {
 		// 	await drawLabels({
-		// 		image: './src/assets/recap-2023.png',
+		// 		image: './src/assets/recap-2024.png',
 		// 		output,
 		// 		labels: [
 		// 			{
