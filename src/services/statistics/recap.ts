@@ -112,10 +112,9 @@ async function getUserRecap(
 		new Date(year - 1, 0, 1, 1),
 		new Date(year - 1 + 1, 0, 1)
 	)
+	const ratesPrev = rawMonthsPrev.flatMap(month => month.rates)
 	const userAveragePrev =
-		rawMonthsPrev
-			.flatMap(month => month.rates)
-			.reduce((sum, { value }) => sum + value, 0) / rates.length
+		ratesPrev.reduce((sum, { value }) => sum + value, 0) / ratesPrev.length
 
 	const rawDays = await getUserDailyRates(
 		database,
