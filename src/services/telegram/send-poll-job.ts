@@ -219,7 +219,10 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 
 async function startSendPollJob(api: Api, i18n: I18n, database: Database) {
 	return cron.scheduleJob(
-		process.env.POLL_TIME,
+		{
+			rule: process.env.POLL_TIME,
+			tz: 'Europe/Prague'
+		},
 		populatePoll.bind(null, api, i18n, database)
 	)
 }
