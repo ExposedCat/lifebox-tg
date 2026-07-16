@@ -3,7 +3,15 @@
 		"started": "Привіт, ${username}!\nnЦей бот - єдиний, кому цікаво твоє життя\nТвій профіль /profile\nТвоя якість життя /history",
 		"recap-2024-explanation": "- Days rated: кількість оцінених днів\n- Average day rate: середнє значення всіх твоїх оцінок з 2024.01.01\n- Happiness: порівняння твоєї середньої оцінки з середньою оцінкою всіх інших користувачів\n- Happiest and worst months: місяці з найкращою і найгіршою (середньою) оцінкою\n- In a row: кількість днів підряд коли твоя якість життя* збільшувалася/зменшувалася/залишалася такою самою.\n\n*Якість життя в даний день це середня оцінка даного і 6 попередніх днів",
 		"wrapped": "Натисни кнопку вище, щоб відкрити<a href=\"https://t.me/Lifebox_Robot/wrapped\"> </a>2025 Wrapped",
-		"groupSettings": "Налаштування групи\n\n- Отримувати кастомні опитування: ${customPolls} (🟢)\n- Нагадування оцінити день: ${tagUsers} (🟢)\n\nЩоб змінити налаштування, використовуй <code>/setting ID on|off</code>. ID написано напроти кожного налаштування"
+		"groupSettings": "Налаштування групи:\n\n${options}\n\nНатисни команду, щоб перемкнути"
+	},
+	"settings": {
+		"option": {
+			"customPolls": "Отримувати кастомні опитування",
+			"reminder": "Нагадувати мені оцінити день"
+		},
+		"adminOnly": "тільки адмін",
+		"optionAdminOnly": "\"${option}\" може змінювати тільки адмін."
 	},
 	"fetch": {
 		"profile": "${name} ${icon}\nЯкість життя: ${lifeQuality} 点\nСереднє: ${averageLifeQuality} 点",
@@ -68,10 +76,6 @@
 		"noRightsForSettings": "Тобі не дозволено змінювати налаштування групи",
 		"usersNotFound": "У цій групі не знайдено користувачів з оцінками.",
 		"chatNotFound": "Групу не знайдено",
-		"cannotCompareSelf": "Твоя історія вже є на цьому графіку",
-		"format": {
-			"setting": "Некоректний формат\nВикористання: <code>/setting ID on|off</code>\nПриклад: <code>/setting custom_polls on</code>",
-			"settingValue": "Некорректний формат\nID налаштування має бути взятий з повідомлення /settings\nПриклад: <code>/setting custom_polls on</code>"
-		}
+		"cannotCompareSelf": "Твоя історія вже є на цьому графіку"
 	}
 }

@@ -3,7 +3,15 @@
 		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your /profile\nSee your life quality /history",
 		"recap-2024-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2024.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days",
 		"wrapped": "Press the button above to view<a href=\"https://t.me/Lifebox_Robot/wrapped\"> </a>2025 Wrapped",
-		"groupSettings": "Group Settings\n\n- Receive custom polls: ${customPolls} (<code>custom_polls</code>)\n- Remind to rate a day: ${tagUsers} (<code>reminder</code>)\n\nTo change a setting, use command <code>/setting ID on|off</code>. ID is provided next to each setting"
+		"groupSettings": "Group Settings:\n\n${options}\n\nClick command to toggle"
+	},
+	"settings": {
+		"option": {
+			"customPolls": "Receive custom polls",
+			"reminder": "Remind me to rate a day"
+		},
+		"adminOnly": "admin only",
+		"optionAdminOnly": "\"${option}\" can only be changed by the admin."
 	},
 	"fetch": {
 		"profile": "${name} ${icon}\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
@@ -68,11 +76,6 @@
 		"noRightsForSettings": "You have no rights to change settings",
 		"usersNotFound": "No rated users found in this group.",
 		"chatNotFound": "Chat not found",
-		"cannotCompareSelf": "Your history is already on this graph",
-		"format": {
-			"setting": "Invalid format\nUsage: <code>/setting ID on|off</code>\nExample: <code>/setting custom_polls on</code>",
-			"settingValue": "Invalid format\nSetting value must be either 'on' or 'off'\nExample: <code>/setting custom_polls on</code>",
-			"settingID": "Invalid format\nSetting ID must be taken from /settings message\nExample: <code>/setting custom_polls on</code>"
-		}
+		"cannotCompareSelf": "Your history is already on this graph"
 	}
 }
