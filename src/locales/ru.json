@@ -1,13 +1,13 @@
 {
 	"state": {
-		"started": "Привет, ${username}!\nЭтот бот - единственный, кому интересно твоя жизнь\nТвой социальный профиль /profile\nТвое качество жизни /history\n\nPowered by @ExposedCatDev",
-		"recap-2024-explanation": "- Days rated: количество оцененных дней\n- Average day rate: среднее значение всех твоих оценок с 2024.01.01\n- Happiness: сравнение твоей средней оценки со средней оценкой всех остальных пользователей\n- Happiest and worst months: месяцы с лучшей и худшей (средней) оценкой\n- In a row: количество дней подряд, когда твое качество жизни* увеличивалось/уменьшалось/оставалось таким же.\n\n*Качество жизни в данный день это средняя оценка данного и 6 предыдущих дней\n\nОтдельное спасибо @cherikora за дизайн карточек и идеи контента &lt;3",
+		"started": "Привет, ${username}!\nЭтот бот - единственный, кому интересно твоя жизнь\nТвой профиль /profile\nТвое качество жизни /history",
+		"recap-2024-explanation": "- Days rated: количество оцененных дней\n- Average day rate: среднее значение всех твоих оценок с 2024.01.01\n- Happiness: сравнение твоей средней оценки со средней оценкой всех остальных пользователей\n- Happiest and worst months: месяцы с лучшей и худшей (средней) оценкой\n- In a row: количество дней подряд, когда твое качество жизни* увеличивалось/уменьшалось/оставалось таким же.\n\n*Качество жизни в данный день это средняя оценка данного и 6 предыдущих дней",
 		"wrapped": "Нажми кнопку выше, чтоб открыть<a href=\"https://t.me/Lifebox_Robot/wrapped\"> </a>2025 Wrapped",
 		"groupSettings": "Настройки группы\n\n- Получать кастомные опросы: ${customPolls} (<code>custom_polls</code>)\n- Напоминания оценить день: ${tagUsers} (<code>reminder</code>)\n\nЧтоб изменить настройку, используй <code>/setting ID on|off</code>. ID написан напротив каждой настройки"
 	},
 	"fetch": {
-		"profile": "${name} ${icon}\nСоциальные кредиты: ${credits} 会\nСреднее: ${averageCredits} 会\nКачество жизни: ${lifeQuality} 点\nСреднее: ${averageLifeQuality} 点",
-		"rating": "社会评价体系\n\n${userList}\nСреднее: ${average} ${label}"
+		"profile": "${name} ${icon}\nКачество жизни: ${lifeQuality} 点\nСреднее: ${averageLifeQuality} 点",
+		"rating": "Рейтинг качества жизни\n\n${userList}\nСреднее: ${average} ${label}"
 	},
 	"partial": {
 		"icon": {
@@ -16,7 +16,6 @@
 			"high": "🈯️"
 		},
 		"label": {
-			"credits": "会",
 			"lifeQuality": "点"
 		},
 		"userTag": "<a href=\"tg://user?id=${id}\">@${name}</a>",
@@ -67,7 +66,7 @@
 		"failedToProxyPoll": "Опрос не может быть отправлен в прокси-канал: ${error}",
 		"noRightsForCustomPoll": "Тебе не разрешено отправлять кастомные опросы",
 		"noRightsForSettings": "Тебе не разрешено изменять настройки группы",
-		"usersNotFound": "Все в этой группе имеют социальный рейтинг 0. Что за сообщество...",
+		"usersNotFound": "В этой группе не найдено пользователей с оценками.",
 		"chatNotFound": "Группа не найдена",
 		"cannotCompareSelf": "Твоя история уже есть на этом графике",
 		"format": {

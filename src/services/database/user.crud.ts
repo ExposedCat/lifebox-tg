@@ -2,8 +2,8 @@ import type { OrderedBulkOperation } from 'mongodb'
 
 import type { Database, UserProfile } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
-import { getValueState } from '../credits/get-value-state.js'
-import { getAverageLifeQuality, getAverageCredits } from './statistics.js'
+import { getValueState } from '../statistics/get-value-state.js'
+import { getAverageLifeQuality } from './statistics.js'
 
 function addUserCreationStage(operation: OrderedBulkOperation, userId: number) {
 	operation
@@ -11,7 +11,6 @@ function addUserCreationStage(operation: OrderedBulkOperation, userId: number) {
 		.upsert()
 		.updateOne({
 			$setOnInsert: {
-				credits: [],
 				dayRates: []
 			}
 		})
@@ -23,14 +22,14 @@ export async function createUserIfNotExists(
 	name: string,
 	initialGroupId: number
 ) {
-	await updateUserCredits(
-		database,
-		id,
-		initialGroupId,
-		Number(process.env.INITIAL_CREDITS),
-		name,
-		true,
-		true
+	await database.updateOne(
+		{ userId: id },
+		{
+			$setOnInsert: { dayRates: [] },
+			$addToSet: { groups: initialGroupId },
+			...(name ? { $set: { name } } : {})
+		},
+		{ upsert: true }
 	)
 }
 
@@ -58,7 +57,7 @@ export async function updateUserDayRate(
 			})
 		)
 
-	// Update credits & name if specified
+	// Update day rate
 	operation
 		.find({
 			userId: id,
@@ -74,55 +73,6 @@ export async function updateUserDayRate(
 	await operation.execute()
 }
 
-export async function updateUserCredits(
-	database: Database['users'],
-	id: number,
-	groupId: number,
-	change: number,
-	name?: string,
-	create = false,
-	changed = false
-) {
-	const operation = database.initializeOrderedBulkOp()
-
-	// Create user if not exists
-	addUserCreationStage(operation, id)
-
-	// Create user local data if not exists
-	operation
-		.find({
-			userId: id,
-			'credits.groupId': $.ne(groupId)
-		})
-		.updateOne(
-			$.push({
-				credits: {
-					groupId,
-					credits: Number(process.env.INITIAL_CREDITS)
-				}
-			})
-		)
-
-	// Update credits & name if specified
-	const hasSet = name && !create && changed
-	const update = {
-		...$.inc('credits.$.credits', change),
-		...(hasSet &&
-			$.set({
-				...(name && { name }),
-				...(!create && changed && { 'credits.$.lastRated': new Date() })
-			}))
-	}
-	operation
-		.find({
-			userId: id,
-			'credits.groupId': groupId
-		})
-		.updateOne(update)
-
-	await operation.execute()
-}
-
 export async function getUserProfile(
 	database: Database['users'],
 	userId: number,
@@ -132,19 +82,9 @@ export async function getUserProfile(
 	const users = database.aggregate<UserProfile>([
 		$.match({ userId }),
 		$.project({
+			_id: 0,
 			name: 1,
-			credits: 1,
-			lifeQuality: {
-				$round: [{ $avg: '$dayRates.value' }, 1]
-			}
-		}),
-		$.unwind('credits'),
-		$.match({ 'credits.groupId': localGroupId }),
-		$.project({
-			name: 1,
-			lifeQuality: 1,
-			credits: '$credits.credits',
-			lastRated: '$credits.lastRated'
+			lifeQuality: $.round({ $ifNull: [{ $avg: '$dayRates.value' }, 0] }, 1)
 		})
 	])
 
@@ -154,13 +94,11 @@ export async function getUserProfile(
 	}
 
 	let state: string | null = null
-	let averageCredits: number | null = null
 	let averageLifeQuality: number | null = null
 	if (calcAverage) {
 		averageLifeQuality = await getAverageLifeQuality(database, localGroupId)
-		averageCredits = await getAverageCredits(database, localGroupId)
-		state = getValueState(user.credits, averageCredits)
+		state = getValueState(user.lifeQuality, averageLifeQuality)
 	}
 
-	return { user, averageCredits, averageLifeQuality, state }
+	return { user, averageLifeQuality, state }
 }

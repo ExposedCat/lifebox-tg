@@ -1,15 +1,15 @@
 import { ValueState } from '../../types/index.js'
 
-function getValueState(credits: number, averageCredits: number) {
+function getValueState(value: number, average: number) {
 	let state = ValueState.Normal
 	const lowPercent = Number(process.env.VALUE_SMALL_PERCENT) / 100
-	const lowLimit = averageCredits * lowPercent
-	if (credits <= lowLimit) {
+	const lowLimit = average * lowPercent
+	if (value <= lowLimit) {
 		state = ValueState.Low
 	} else {
 		const highPercent = Number(process.env.VALUE_HIGH_PERCENT) / 100
-		const highLimit = averageCredits * highPercent
-		if (credits >= highLimit) {
+		const highLimit = average * highPercent
+		if (value >= highLimit) {
 			state = ValueState.High
 		}
 	}

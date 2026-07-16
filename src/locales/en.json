@@ -1,13 +1,13 @@
 {
 	"state": {
-		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your social /profile\nSee your life quality /history\n\nPowered by @ExposedCatDev",
-		"recap-2024-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2024.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days\n\nSpecial thanks to @cherikora for the design of these wonderful cards and help with ideas &lt;3",
+		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your /profile\nSee your life quality /history",
+		"recap-2024-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2024.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days",
 		"wrapped": "Press the button above to view<a href=\"https://t.me/Lifebox_Robot/wrapped\"> </a>2025 Wrapped",
 		"groupSettings": "Group Settings\n\n- Receive custom polls: ${customPolls} (<code>custom_polls</code>)\n- Remind to rate a day: ${tagUsers} (<code>reminder</code>)\n\nTo change a setting, use command <code>/setting ID on|off</code>. ID is provided next to each setting"
 	},
 	"fetch": {
-		"profile": "${name} ${icon}\nSocial credits: ${credits} 会\nAverage: ${averageCredits} 会\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
-		"rating": "社会评价体系\n\n${userList}\nAverage: ${average} ${label}"
+		"profile": "${name} ${icon}\nLife quality: ${lifeQuality} 点\nAverage: ${averageLifeQuality} 点",
+		"rating": "Life quality rating\n\n${userList}\nAverage: ${average} ${label}"
 	},
 	"partial": {
 		"icon": {
@@ -16,7 +16,6 @@
 			"high": "🈯️"
 		},
 		"label": {
-			"credits": "会",
 			"lifeQuality": "点"
 		},
 		"fakeUserTag": "${name}",
@@ -67,7 +66,7 @@
 		"failedToProxyPoll": "Poll cannot be proxied: ${error}",
 		"noRightsForCustomPoll": "You have no rights to send custom polls",
 		"noRightsForSettings": "You have no rights to change settings",
-		"usersNotFound": "Everyone in this group has 0 social credits. What a community...",
+		"usersNotFound": "No rated users found in this group.",
 		"chatNotFound": "Chat not found",
 		"cannotCompareSelf": "Your history is already on this graph",
 		"format": {

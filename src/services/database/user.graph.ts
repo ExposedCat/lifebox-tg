@@ -1,9 +1,4 @@
-import type {
-	Database,
-	User,
-	UserLifeQuality,
-	UserProfile
-} from '../../types/index.js'
+import type { Database, User, UserLifeQuality } from '../../types/index.js'
 import { DbQueryBuilder as $ } from '../../helpers/index.js'
 import type { Dataset, Point } from '../charts.js'
 
@@ -89,49 +84,6 @@ export async function fetchUserRatesGraph(args: {
 	return { userDatasets, averagePoints }
 }
 
-export async function getTopSocialUsers(
-	database: Database['users'],
-	groupId: number
-) {
-	const aggregation = database.aggregate<{
-		list: UserProfile[]
-		average: number
-	}>([
-		$.match({
-			credits: $.elemMatch({
-				groupId,
-				credits: $.ne(0)
-			})
-		}),
-		$.unwind('credits'),
-		$.match({ 'credits.groupId': groupId }),
-		$.project({
-			_id: 0,
-			name: 1,
-			credits: '$credits.credits'
-		}),
-		$.sort('credits', -1),
-		$.group({
-			_id: null,
-			list: {
-				$push: '$$ROOT'
-			}
-		}),
-		$.project({
-			_id: 0,
-			list: $.slice('list', Number(process.env.RATING_LIMIT)),
-			average: $.arrayElemAt(
-				'list.credits',
-				$.subtract($.ceil($.divide($.size('$list'), 2)), 1)
-			)
-		})
-	])
-
-	const [data] = await aggregation.toArray()
-
-	return data || { list: [], average: 0 }
-}
-
 export async function getTopLifeUsers(
 	database: Database['users'],
 	groupId: number
@@ -141,7 +93,7 @@ export async function getTopLifeUsers(
 		average: number
 	}>([
 		$.match({
-			'credits.groupId': groupId,
+			groups: groupId,
 			$expr: {
 				$ne: [{ $size: '$dayRates' }, 0]
 			}

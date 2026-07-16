@@ -4,47 +4,13 @@ import { DbQueryBuilder as $ } from '../../helpers/index.js'
 import type { DayRate } from '../../types/database.js'
 import type { Database } from '../../types/index.js'
 
-async function getAverageCredits(database: Database['users'], groupId: number) {
-	const aggregation = database.aggregate<{ median: number }>([
-		$.match({
-			credits: $.elemMatch({
-				groupId,
-				credits: $.ne(0)
-			})
-		}),
-		$.unwind('credits'),
-		$.sort('credits.credits', 1),
-		$.match({ 'credits.groupId': groupId }),
-		$.group({
-			_id: 'id',
-			array: { $push: '$credits.credits' }
-		}),
-		$.project({
-			_id: 0,
-			array: 1,
-			position: {
-				$ceil: {
-					$divide: [{ $size: '$array' }, 2]
-				}
-			}
-		}),
-		$.project({
-			median: $.arrayElemAt('array', $.subtract('$position', 1))
-		})
-	])
-
-	const [data] = await aggregation.toArray()
-
-	return data?.median || 0
-}
-
 async function getAverageLifeQuality(
 	database: Database['users'],
 	groupId: number | null
 ) {
 	const aggregation = database.aggregate<{ average: number }>([
 		$.match({
-			...(groupId !== null && { 'credits.groupId': groupId }),
+			...(groupId !== null && { groups: groupId }),
 			$expr: {
 				$ne: [{ $size: '$dayRates' }, 0]
 			}
@@ -145,9 +111,4 @@ async function getUserDailyRates(
 		.toArray()
 }
 
-export {
-	getAverageCredits,
-	getAverageLifeQuality,
-	getUserMonthlyRates,
-	getUserDailyRates
-}
+export { getAverageLifeQuality, getUserMonthlyRates, getUserDailyRates }

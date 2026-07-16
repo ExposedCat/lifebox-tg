@@ -24,12 +24,8 @@ type DayRate = {
 type User = {
 	userId: number
 	name: string | undefined
-	credits: {
-		groupId: number
-		credits: number
-	}[]
+	groups: number[]
 	dayRates: DayRate[]
-	lastRated: Date
 }
 
 enum ValueState {
@@ -40,9 +36,7 @@ enum ValueState {
 
 type UserProfile = {
 	name?: string
-	credits: number
 	lifeQuality: number
-	lastRated: Date
 }
 
 type UserLifeQuality = {

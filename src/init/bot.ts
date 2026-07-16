@@ -30,7 +30,6 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.compareGraphs)
 	bot.use(handlers.botAdded)
 	bot.use(handlers.rateDate)
-	bot.use(handlers.reactions)
 	bot.use(handlers.sendPollForceController(i18n))
 	bot.use(handlers.sendPollHereForceController(i18n))
 	bot.use(handlers.sendCustomPollController(i18n))
@@ -38,12 +37,9 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.profile)
 	bot.use(handlers.history)
 	bot.use(handlers.lifeQuality)
-	bot.use(handlers.social)
 	bot.use(handlers.recapController)
 	bot.use(handlers.explainRecapController)
 	bot.use(handlers.groupSettings)
-
-	bot.use(handlers.groupTextMessage)
 }
 
 function startBot(database: Database) {
