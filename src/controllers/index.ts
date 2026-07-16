@@ -8,7 +8,8 @@ export { controller as history } from './history.js'
 export { controller as compareGraphs } from './compare-graph.js'
 export {
 	sendPollForceController,
-	sendPollHereForceController
+	sendPollHereForceController,
+	sendTestDailyPollController
 } from './send-poll-force.js'
 export { sendCustomPollController } from './custom-poll.js'
 export { recapController } from './recap.js'

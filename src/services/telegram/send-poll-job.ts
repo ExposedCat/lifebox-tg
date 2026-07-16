@@ -29,10 +29,19 @@ function pollOption(text: string, customEmojiId: string): InputPollOption {
 
 async function sendInitialPoll(args: { api: Api; i18n: I18n; group: Group }) {
 	const { api, i18n, group } = args
+	return sendDailyPoll({ api, i18n, chatId: group.groupId })
+}
+
+async function sendDailyPoll(args: {
+	api: Api
+	i18n: I18n
+	chatId: number | string
+}) {
+	const { api, i18n, chatId } = args
 	const text = (label: string) => i18n.t(process.env.POLL_LANG, `poll.${label}`)
 
 	const { poll, message_id: messageId } = await api.sendPoll(
-		group.groupId,
+		chatId,
 		text('question'),
 		[
 			pollOption('+2 · amazing news', '6334483506357339673'),
@@ -245,4 +254,4 @@ async function startSendPollJob(api: Api, i18n: I18n, database: Database) {
 	)
 }
 
-export { startSendPollJob, populatePoll, resendPoll, sendPoll }
+export { startSendPollJob, populatePoll, resendPoll, sendPoll, sendDailyPoll }

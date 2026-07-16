@@ -2,7 +2,11 @@ import { Composer } from 'grammy'
 
 import type { I18n } from '@grammyjs/i18n/dist/source/i18n.js'
 import type { CustomContext } from '../types/index.js'
-import { populatePoll, sendPoll } from '../services/telegram/send-poll-job.js'
+import {
+	populatePoll,
+	sendDailyPoll,
+	sendPoll
+} from '../services/telegram/send-poll-job.js'
 import { getGroup } from '../services/database/group.crud.js'
 
 function sendPollForceController(i18n: I18n) {
@@ -42,4 +46,20 @@ function sendPollHereForceController(i18n: I18n) {
 	return controller
 }
 
-export { sendPollForceController, sendPollHereForceController }
+function sendTestDailyPollController(i18n: I18n) {
+	const controller = new Composer<CustomContext>()
+	controller
+		.chatType(['supergroup', 'group'])
+		.command('test_daily', async ctx => {
+			if (ctx.from.id === Number(process.env.ADMIN_ID)) {
+				await sendDailyPoll({ api: ctx.api, i18n, chatId: ctx.chat.id })
+			}
+		})
+	return controller
+}
+
+export {
+	sendPollForceController,
+	sendPollHereForceController,
+	sendTestDailyPollController
+}
