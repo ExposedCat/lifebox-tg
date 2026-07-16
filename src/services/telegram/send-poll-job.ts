@@ -1,6 +1,7 @@
 import cron from 'node-schedule'
 import { setTimeout } from 'timers/promises'
 import type { Api, GrammyError } from 'grammy'
+import type { InputPollOption } from 'grammy/types'
 import type { I18n } from '@grammyjs/i18n/dist/source'
 
 import type { Database, Group } from '../../types/index.js'
@@ -12,6 +13,20 @@ function getChannelActionUrl(messageId: number | string) {
 	return `https://t.me/${process.env.PUBLIC_POLLS_CHAT_NAME}/${messageId}`
 }
 
+function pollOption(text: string, customEmojiId: string): InputPollOption {
+	return {
+		text: `▫️ ${text}`,
+		text_entities: [
+			{
+				type: 'custom_emoji',
+				offset: 0,
+				length: 2,
+				custom_emoji_id: customEmojiId
+			}
+		]
+	}
+}
+
 async function sendInitialPoll(args: { api: Api; i18n: I18n; group: Group }) {
 	const { api, i18n, group } = args
 	const text = (label: string) => i18n.t(process.env.POLL_LANG, `poll.${label}`)
@@ -20,11 +35,11 @@ async function sendInitialPoll(args: { api: Api; i18n: I18n; group: Group }) {
 		group.groupId,
 		text('question'),
 		[
-			{ text: text('option.perfect') },
-			{ text: text('option.one') },
-			{ text: text('option.neutral') },
-			{ text: text('option.minusOne') },
-			{ text: text('option.awful') }
+			pollOption('+2 · amazing news', '6334483506357339673'),
+			pollOption('+1 · great day', '6334660699528103998'),
+			pollOption(' 0 · usual day', '6332333467203798705'),
+			pollOption('-1 · bad day', '6334455382911485406'),
+			pollOption('-2 · horrible news', '6334851331651536470')
 		],
 		{ is_anonymous: false }
 	)
