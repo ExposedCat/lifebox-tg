@@ -3,6 +3,7 @@ import { Composer } from 'grammy'
 import type { I18n } from '@grammyjs/i18n/dist/source/i18n.js'
 import type { CustomContext } from '../types/index.js'
 import { populatePoll, sendPoll } from '../services/telegram/send-poll-job.js'
+import { getGroup } from '../services/database/group.crud.js'
 
 function sendPollForceController(i18n: I18n) {
 	const controller = new Composer<CustomContext>()
@@ -28,7 +29,7 @@ function sendPollHereForceController(i18n: I18n) {
 		.chatType(['supergroup', 'group'])
 		.command('force_resend_here', async ctx => {
 			if (ctx.from.id === Number(process.env.ADMIN_ID)) {
-				const group = await ctx.db.groups.findOne({ groupId: ctx.chat.id })
+				const group = await getGroup(ctx.db.groups, ctx.chat.id)
 				if (!group) {
 					await ctx.text('error.chatNotFound')
 					return

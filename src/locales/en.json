@@ -7,6 +7,7 @@
 	},
 	"settings": {
 		"option": {
+			"dailyPolls": "Receive daily polls",
 			"customPolls": "Receive custom polls",
 			"reminder": "Remind me to rate a day"
 		},

@@ -6,14 +6,10 @@ loadEnv()
 
 async function migrate(database: Database['groups']) {
 	await database.updateMany(
-		{},
+		{ 'settings.receiveDailyPolls': { $exists: false } },
 		{
 			$set: {
-				settings: {
-					tagUsers: [],
-					receiveCustomPolls: false,
-					receiveDailyPolls: true
-				}
+				'settings.receiveDailyPolls': true
 			}
 		}
 	)

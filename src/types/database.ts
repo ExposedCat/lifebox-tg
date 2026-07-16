@@ -6,6 +6,7 @@ type Group = {
 	settings: {
 		tagUsers: { userId: number }[]
 		receiveCustomPolls: boolean
+		receiveDailyPolls: boolean
 	}
 }
 

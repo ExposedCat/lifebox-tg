@@ -203,6 +203,9 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 			if (group.groupId === firstGroupId) {
 				continue
 			}
+			if (!group.settings.receiveDailyPolls) {
+				continue
+			}
 			totalGroups += 1
 			try {
 				await sendPoll(api, i18n, database, group, messageId)

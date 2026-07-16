@@ -2,13 +2,14 @@ import { Composer } from 'grammy'
 
 import { getGroup } from '../services/database/group.crud.js'
 import { updateGroupCustomPollsSetting } from '../services/database/group.settings/custom-polls.js'
+import { updateGroupDailyPollsSetting } from '../services/database/group.settings/daily-polls.js'
 import { updateGroupTagUsersSetting } from '../services/database/group.settings/tag-users.js'
 import type { CustomContext, Group } from '../types/index.js'
 
 export const settingsController = new Composer<CustomContext>()
 
 type SettingOption = {
-	id: 'custom_polls' | 'reminder'
+	id: 'daily_polls' | 'custom_polls' | 'reminder'
 	labelKey: string
 	commandId: string
 	adminOnly?: boolean
@@ -19,6 +20,12 @@ const DISABLED_ICON = `<tg-emoji emoji-id="5364330229043062830">➰</tg-emoji>`
 const SETTING_COMMAND_PATTERN = /^set_([a-z0-9]+)_(on|off)$/
 
 const OPTIONS: SettingOption[] = [
+	{
+		id: 'daily_polls',
+		labelKey: 'settings.option.dailyPolls',
+		commandId: 'dp',
+		adminOnly: true
+	},
 	{
 		id: 'custom_polls',
 		labelKey: 'settings.option.customPolls',
@@ -69,6 +76,10 @@ function parseSettingCommand(text: string) {
 }
 
 function isSettingEnabled(option: SettingOption, group: Group, userId: number) {
+	if (option.id === 'daily_polls') {
+		return group.settings.receiveDailyPolls
+	}
+
 	if (option.id === 'custom_polls') {
 		return group.settings.receiveCustomPolls
 	}
@@ -115,20 +126,29 @@ async function applySetting(
 		return false
 	}
 
+	if (option.id === 'daily_polls') {
+		await updateGroupDailyPollsSetting(ctx.db.groups, group, value)
+		group.settings.receiveDailyPolls = value
+		return true
+	}
+
 	if (option.id === 'custom_polls') {
 		await updateGroupCustomPollsSetting(ctx.db.groups, group, value)
 		group.settings.receiveCustomPolls = value
-	} else if (ctx.from) {
-		await updateGroupTagUsersSetting(ctx.db.groups, group, ctx.from.id, value)
-		group.settings.tagUsers = value
-			? [
-					...group.settings.tagUsers.filter(
-						user => user.userId !== ctx.from?.id
-					),
-					{ userId: ctx.from.id }
-				]
-			: group.settings.tagUsers.filter(user => user.userId !== ctx.from?.id)
+		return true
 	}
+
+	if (!ctx.from) {
+		return false
+	}
+
+	await updateGroupTagUsersSetting(ctx.db.groups, group, ctx.from.id, value)
+	group.settings.tagUsers = value
+		? [
+				...group.settings.tagUsers.filter(user => user.userId !== ctx.from?.id),
+				{ userId: ctx.from.id }
+			]
+		: group.settings.tagUsers.filter(user => user.userId !== ctx.from?.id)
 
 	return true
 }

@@ -7,7 +7,8 @@ export function updateGroupTagUsersSetting(
 	userId: number,
 	newValue: boolean
 ) {
-	const enabled = group.settings.tagUsers.some(user => user.userId === userId)
+	const tagUsers = group.settings?.tagUsers ?? []
+	const enabled = tagUsers.some(user => user.userId === userId)
 	if ((enabled && newValue) || (!enabled && !newValue)) {
 		return
 	}
@@ -16,15 +17,23 @@ export function updateGroupTagUsersSetting(
 			$set: {
 				'settings.tagUsers': {
 					$cond: {
-						if: { $in: [{ userId }, '$settings.tagUsers'] },
+						if: {
+							$in: [
+								{ userId },
+								{ $ifNull: ['$settings.tagUsers', []] }
+							]
+						},
 						then: {
 							$filter: {
-								input: '$settings.tagUsers',
+								input: { $ifNull: ['$settings.tagUsers', []] },
 								cond: { $ne: ['$$this.userId', userId] }
 							}
 						},
 						else: {
-							$concatArrays: ['$settings.tagUsers', [{ userId }]]
+							$concatArrays: [
+								{ $ifNull: ['$settings.tagUsers', []] },
+								[{ userId }]
+							]
 						}
 					}
 				}
