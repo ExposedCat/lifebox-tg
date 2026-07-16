@@ -30,7 +30,7 @@ async function startApp() {
 
 	let bot
 	try {
-		bot = startBot(database)
+		bot = await startBot(database)
 	} catch (error) {
 		console.error('Error occurred while starting the bot:', error)
 		process.exit(3)
