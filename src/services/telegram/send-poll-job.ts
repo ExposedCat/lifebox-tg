@@ -13,13 +13,18 @@ function getChannelActionUrl(messageId: number | string) {
 	return `https://t.me/${process.env.PUBLIC_POLLS_CHAT_NAME}/${messageId}`
 }
 
-function pollOption(text: string, customEmojiId: string): InputPollOption {
+function pollOption(
+	number: string,
+	label: string,
+	customEmojiId: string
+): InputPollOption {
+	const emojiOffset = number.length + 1
 	return {
-		text: `▫️ ${text}`,
+		text: `${number} ▫️ · ${label}`,
 		text_entities: [
 			{
 				type: 'custom_emoji',
-				offset: 0,
+				offset: emojiOffset,
 				length: 2,
 				custom_emoji_id: customEmojiId
 			}
@@ -44,11 +49,11 @@ async function sendDailyPoll(args: {
 		chatId,
 		text('question'),
 		[
-			pollOption('+2 · amazing news', '6334483506357339673'),
-			pollOption('+1 · great day', '6334660699528103998'),
-			pollOption(' 0 · usual day', '6332333467203798705'),
-			pollOption('-1 · bad day', '6334455382911485406'),
-			pollOption('-2 · horrible news', '6334851331651536470')
+			pollOption('+2', 'amazing news', '6334483506357339673'),
+			pollOption('+1', 'great day', '6334660699528103998'),
+			pollOption('  0', 'usual day', '6332333467203798705'),
+			pollOption('-1', 'bad day', '6334455382911485406'),
+			pollOption('-2', 'horrible news', '6334851331651536470')
 		],
 		{ is_anonymous: false }
 	)
