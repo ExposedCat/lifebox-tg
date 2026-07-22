@@ -9,6 +9,8 @@ import { TelegramApiError } from '../../types/index.js'
 import { fetchGroups } from '../index.js'
 import { getUserNames } from '../database/user.names.js'
 
+const WORD_JOINER = '\u2060'
+
 function getChannelActionUrl(messageId: number | string) {
 	return `https://t.me/${process.env.PUBLIC_POLLS_CHAT_NAME}/${messageId}`
 }
@@ -49,11 +51,11 @@ async function sendDailyPoll(args: {
 		chatId,
 		text('question'),
 		[
-			pollOption('+2', 'amazing news', '6334483506357339673'),
-			pollOption('+1', 'great day', '6334660699528103998'),
-			pollOption('  0', 'usual day', '6332333467203798705'),
-			pollOption('-1', 'bad day', '6334455382911485406'),
-			pollOption('-2', 'horrible news', '6334851331651536470')
+			pollOption('+2', 'amazing news', '6334732769079330250'),
+			pollOption('+1', 'great day', '6334334234768967026'),
+			pollOption(`${WORD_JOINER}  0`, 'usual day', '6334831862564783755'),
+			pollOption('-1', 'bad day', '6334458694331270658'),
+			pollOption('-2', 'horrible news', '6334676346093963090')
 		],
 		{ is_anonymous: false }
 	)
