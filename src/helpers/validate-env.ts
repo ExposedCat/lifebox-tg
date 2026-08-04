@@ -1,7 +1,6 @@
 function validateEnv() {
 	const required = [
 		'TOKEN',
-		'DB_CONNECTION_STRING',
 		'POLL_LANG',
 		'VALUE_SMALL_PERCENT',
 		'VALUE_HIGH_PERCENT',

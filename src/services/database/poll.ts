@@ -44,8 +44,7 @@ export async function createPoll(database: Database, poll: Poll) {
 		.values({
 			poll_id: poll.pollId,
 			message_id: poll.messageId ?? null,
-			date: poll.date.getTime(),
-			mongo_id: `sqlite:${poll.pollId}`
+			date: poll.date.getTime()
 		})
 		.execute()
 }

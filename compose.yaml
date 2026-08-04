@@ -1,28 +1,12 @@
 services:
-  lifebox_db:
-    image: docker.io/library/mongo:7
-    restart: unless-stopped
-    volumes:
-      - lifebox-mongo-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 })"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   lifebox_bot:
     build:
       context: .
       dockerfile: Containerfile
     restart: unless-stopped
-    depends_on:
-      lifebox_db:
-        condition: service_healthy
     env_file:
       - .env
     environment:
-      DB_CONNECTION_STRING: mongodb://lifebox_db:27017/lifebox
       SQLITE_PATH: /data/lifebox.sqlite
     init: true
     ports:
@@ -31,5 +15,4 @@ services:
       - lifebox-sqlite-data:/data
 
 volumes:
-  lifebox-mongo-data:
   lifebox-sqlite-data:

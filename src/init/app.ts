@@ -1,5 +1,4 @@
 import { loadEnv, validateEnv } from '../helpers/index.js'
-import { migrateMongoToSqlite } from '../migrations/mongo-to-sqlite.js'
 import { startApi } from './api.js'
 import { connectToDb, startBot } from './index.js'
 
@@ -15,7 +14,6 @@ async function startApp() {
 	let database
 	try {
 		database = await connectToDb()
-		await migrateMongoToSqlite(database)
 	} catch (error) {
 		console.error('Error occurred while preparing the database:', error)
 		process.exit(2)

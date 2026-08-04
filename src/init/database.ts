@@ -3,6 +3,21 @@ import { Kysely, SqliteDialect, sql } from 'kysely'
 
 import type { Database, DatabaseSchema } from '../types/index.js'
 
+function cleanupLegacySchema(sqlite: BetterSqlite3.Database) {
+	const legacyColumn = sqlite.prepare(
+		"SELECT 1 FROM pragma_table_info(?) WHERE name = 'mongo_id'"
+	)
+	const migrate = sqlite.transaction(() => {
+		for (const table of ['users', 'groups', 'polls'] as const) {
+			if (legacyColumn.get(table)) {
+				sqlite.exec(`ALTER TABLE "${table}" DROP COLUMN "mongo_id"`)
+			}
+		}
+		sqlite.exec('DROP TABLE IF EXISTS "migration_state"')
+	})
+	migrate()
+}
+
 async function migrateSchema(database: Database) {
 	await sql`PRAGMA foreign_keys = ON`.execute(database)
 	await sql`PRAGMA journal_mode = WAL`.execute(database)
@@ -13,7 +28,6 @@ async function migrateSchema(database: Database) {
 		.ifNotExists()
 		.addColumn('user_id', 'integer', column => column.primaryKey())
 		.addColumn('name', 'text')
-		.addColumn('mongo_id', 'text', column => column.notNull())
 		.execute()
 
 	await database.schema
@@ -71,7 +85,6 @@ async function migrateSchema(database: Database) {
 		.addColumn('is_channel', 'integer', column => column.notNull())
 		.addColumn('receive_custom_polls', 'integer', column => column.notNull())
 		.addColumn('receive_daily_polls', 'integer', column => column.notNull())
-		.addColumn('mongo_id', 'text', column => column.notNull())
 		.addCheckConstraint('groups_is_channel_boolean', sql`is_channel IN (0, 1)`)
 		.addCheckConstraint(
 			'groups_receive_custom_polls_boolean',
@@ -112,7 +125,6 @@ async function migrateSchema(database: Database) {
 		.addColumn('poll_id', 'text', column => column.primaryKey())
 		.addColumn('message_id', 'integer')
 		.addColumn('date', 'integer', column => column.notNull())
-		.addColumn('mongo_id', 'text', column => column.notNull())
 		.execute()
 
 	await database.schema
@@ -121,19 +133,14 @@ async function migrateSchema(database: Database) {
 		.on('polls')
 		.column('date')
 		.execute()
-
-	await database.schema
-		.createTable('migration_state')
-		.ifNotExists()
-		.addColumn('name', 'text', column => column.primaryKey())
-		.addColumn('completed_at', 'integer', column => column.notNull())
-		.execute()
 }
 
 async function connectToDb(): Promise<Database> {
 	const sqlite = new BetterSqlite3(
 		process.env.SQLITE_PATH ?? 'telegram-bot.sqlite'
 	)
+	sqlite.pragma('busy_timeout = 5000')
+	cleanupLegacySchema(sqlite)
 	const database = new Kysely<DatabaseSchema>({
 		dialect: new SqliteDialect({ database: sqlite })
 	})

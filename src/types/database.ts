@@ -33,7 +33,6 @@ type DatabaseSchema = {
 	users: {
 		user_id: number
 		name: string | null
-		mongo_id: string
 	}
 	user_groups: {
 		user_id: number
@@ -52,7 +51,6 @@ type DatabaseSchema = {
 		is_channel: number
 		receive_custom_polls: number
 		receive_daily_polls: number
-		mongo_id: string
 	}
 	group_tag_users: {
 		group_id: number
@@ -63,11 +61,6 @@ type DatabaseSchema = {
 		poll_id: string
 		message_id: number | null
 		date: number
-		mongo_id: string
-	}
-	migration_state: {
-		name: string
-		completed_at: number
 	}
 }
 

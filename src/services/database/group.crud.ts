@@ -38,8 +38,7 @@ export async function createGroupIfNotExists(
 			group_id: groupId,
 			is_channel: Number(isChannel),
 			receive_custom_polls: 0,
-			receive_daily_polls: 1,
-			mongo_id: `sqlite:${groupId}`
+			receive_daily_polls: 1
 		})
 		.onConflict(conflict => conflict.column('group_id').doNothing())
 		.execute()

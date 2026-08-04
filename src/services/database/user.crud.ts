@@ -17,8 +17,7 @@ export async function createUserIfNotExists(
 			.insertInto('users')
 			.values({
 				user_id: id,
-				name: name || null,
-				mongo_id: `sqlite:${id}`
+				name: name || null
 			})
 			.onConflict(conflict => conflict.column('user_id').doNothing())
 			.execute()
@@ -64,7 +63,7 @@ export async function updateUserDayRate(
 	await database.transaction().execute(async transaction => {
 		await transaction
 			.insertInto('users')
-			.values({ user_id: id, name: null, mongo_id: `sqlite:${id}` })
+			.values({ user_id: id, name: null })
 			.onConflict(conflict => conflict.column('user_id').doNothing())
 			.execute()
 
