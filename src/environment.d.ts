@@ -4,6 +4,7 @@ export declare global {
 		interface ProcessEnv {
 			TOKEN: string
 			DB_CONNECTION_STRING: string
+			SQLITE_PATH?: string
 			POLL_TIME: string
 			POLL_LANG: string
 			VALUE_SMALL_PERCENT: string

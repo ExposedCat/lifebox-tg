@@ -22,7 +22,7 @@ recapController
 		)
 		// FIXME: Send miniapp
 		//
-		// const recap = await getUserRecap(ctx.db.users, ctx.from.id, 2024)
+		// const recap = await getUserRecap(ctx.db, ctx.from.id, 2024)
 		// const daysOffset = recap.days < 10 ? 37 : recap.days < 100 ? 21 : 0
 		// const averageOffset = recap.average < 0 ? -20 : 0
 		// const happiestMonthLabel = `${

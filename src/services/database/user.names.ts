@@ -1,25 +1,19 @@
 import type { Database } from '../../types/index.js'
 
 export async function getUserNames(
-	database: Database['users'],
+	database: Database,
 	ids: number[]
 ): Promise<Record<string | number, string>> {
-	const nameList = await database
-		.aggregate<{
-			name: string
-			userId: number
-		}>([
-			{
-				$match: { userId: { $in: ids } }
-			},
-			{
-				$project: {
-					_id: 0,
-					userId: 1,
-					name: 1
-				}
-			}
-		])
-		.toArray()
-	return Object.fromEntries(nameList.map(({ name, userId }) => [userId, name]))
+	if (ids.length === 0) {
+		return {}
+	}
+	const users = await database
+		.selectFrom('users')
+		.select(['user_id', 'name'])
+		.where('user_id', 'in', ids)
+		.where('name', 'is not', null)
+		.execute()
+	return Object.fromEntries(
+		users.map(user => [user.user_id, user.name as string])
+	)
 }

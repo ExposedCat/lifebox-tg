@@ -1,14 +1,14 @@
 import { Composer } from 'grammy'
 
-import type { CustomContext } from '../types/index.js'
-import { updateUserDayRate } from '../services/index.js'
 import { getPoll } from '../services/database/poll.js'
+import { updateUserDayRate } from '../services/index.js'
+import type { CustomContext } from '../types/index.js'
 
 const controller = new Composer<CustomContext>()
 controller.on('poll_answer', async ctx => {
 	if (ctx.pollAnswer.option_ids.length) {
 		const pollId = ctx.pollAnswer.poll_id
-		const poll = await getPoll(ctx.db.polls, pollId)
+		const poll = await getPoll(ctx.db, pollId)
 		if (!poll) {
 			return
 		}
@@ -20,7 +20,7 @@ controller.on('poll_answer', async ctx => {
 		const option = ctx.pollAnswer.option_ids[0]
 		const value = [2, 1, 0, -1, -2][option]
 		const date = poll.date
-		await updateUserDayRate(ctx.db.users, userId, pollId, value, date)
+		await updateUserDayRate(ctx.db, userId, pollId, value, date)
 	}
 })
 

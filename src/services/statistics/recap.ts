@@ -81,11 +81,7 @@ function getMonth(
 	}
 }
 
-async function getUserRecap(
-	database: Database['users'],
-	userId: number,
-	year: number
-) {
+async function getUserRecap(database: Database, userId: number, year: number) {
 	const commonMonths = await getUserMonthlyRates(
 		database,
 		null,

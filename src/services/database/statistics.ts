@@ -1,114 +1,114 @@
-import type { Document } from 'mongodb'
+import type { Database, DayRate } from '../../types/index.js'
 
-import { DbQueryBuilder as $ } from '../../helpers/index.js'
-import type { DayRate } from '../../types/database.js'
-import type { Database } from '../../types/index.js'
+const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
 
 async function getAverageLifeQuality(
-	database: Database['users'],
+	database: Database,
 	groupId: number | null
 ) {
-	const aggregation = database.aggregate<{ average: number }>([
-		$.match({
-			...(groupId !== null && { groups: groupId }),
-			$expr: {
-				$ne: [{ $size: '$dayRates' }, 0]
-			}
-		}),
-		$.project({
-			_id: 0,
-			name: 1,
-			lifeQuality: $.round(
-				$.divide($.sum('$dayRates.value'), $.size('$dayRates')),
-				1
-			)
-		}),
-		$.sort('lifeQuality', -1),
-		$.group({
-			_id: null,
-			average: $.avg('lifeQuality')
-		}),
-		$.project({
-			_id: 0,
-			average: $.round('$average', 1)
-		})
-	])
+	let query = database
+		.selectFrom('day_rates')
+		.innerJoin('users', 'users.user_id', 'day_rates.user_id')
+		.select(['day_rates.user_id', 'day_rates.value'])
 
-	const [data] = await aggregation.toArray()
+	if (groupId !== null) {
+		query = query
+			.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
+			.where('user_groups.group_id', '=', groupId)
+	}
 
-	return data?.average || 0
+	const rows = await query.execute()
+	const values = new Map<number, (number | null)[]>()
+	for (const row of rows) {
+		const userValues = values.get(row.user_id) ?? []
+		userValues.push(row.value)
+		values.set(row.user_id, userValues)
+	}
+
+	const userAverages = [...values.values()].map(userValues =>
+		roundOneDecimal(
+			userValues.reduce<number>((sum, value) => sum + (value ?? 0), 0) /
+				userValues.length
+		)
+	)
+	if (userAverages.length === 0) {
+		return 0
+	}
+	return roundOneDecimal(
+		userAverages.reduce((sum, value) => sum + value, 0) / userAverages.length
+	)
+}
+
+type RateRow = {
+	poll_id: string
+	date: number | null
+	value: number | null
+}
+
+function mapCompleteRate(row: RateRow): DayRate | null {
+	if (row.date === null || row.value === null) {
+		return null
+	}
+	return {
+		pollId: row.poll_id,
+		date: new Date(row.date),
+		value: row.value
+	}
+}
+
+async function getRatesInRange(
+	database: Database,
+	userId: number | null,
+	since: Date,
+	to: Date
+) {
+	let query = database
+		.selectFrom('day_rates')
+		.select(['poll_id', 'date', 'value'])
+		.where('date', '>=', since.getTime())
+		.where('date', '<', to.getTime())
+		.orderBy('date')
+		.orderBy('rate_index')
+	if (userId !== null) {
+		query = query.where('user_id', '=', userId)
+	}
+	const rows = await query.execute()
+	return rows
+		.map(mapCompleteRate)
+		.filter((rate): rate is DayRate => rate !== null)
 }
 
 async function getUserMonthlyRates(
-	database: Database['users'],
+	database: Database,
 	userId: number | null,
 	since: Date,
 	to: Date
 ) {
-	const stages: Document[] = [
-		$.match({
-			$expr: $.ne([$.size('$dayRates'), 0])
-		}),
-		$.unwind('dayRates'),
-		$.sort('dayRates.date', 1),
-		$.match({ 'dayRates.date': $.gte(since) }),
-		$.match({ 'dayRates.date': $.lt(to) }),
-		$.group({
-			_id: {
-				year: { $year: '$dayRates.date' },
-				month: { $month: '$dayRates.date' }
-			},
-			date: { $first: '$dayRates.date' },
-			positiveCount: {
-				$sum: {
-					$cond: [{ $gt: ['$dayRates.value', 0] }, 1, 0]
-				}
-			},
-			negativeCount: {
-				$sum: {
-					$cond: [{ $lt: ['$dayRates.value', 0] }, 1, 0]
-				}
-			},
-			neutralCount: {
-				$sum: {
-					$cond: [{ $eq: ['$dayRates.value', 0] }, 1, 0]
-				}
-			},
-			average: $.avg('dayRates.value'),
-			rates: { $push: '$dayRates' }
-		})
-	]
-	if (userId !== null) {
-		stages.unshift($.match({ userId }))
+	const rates = await getRatesInRange(database, userId, since, to)
+	const months = new Map<string, DayRate[]>()
+	for (const rate of rates) {
+		const key = `${rate.date.getUTCFullYear()}-${rate.date.getUTCMonth()}`
+		const monthRates = months.get(key) ?? []
+		monthRates.push(rate)
+		months.set(key, monthRates)
 	}
-	return await database
-		.aggregate<{ date: Date; rates: DayRate[]; average: number }>(stages)
-		.toArray()
+
+	return [...months.values()].map(monthRates => ({
+		date: monthRates[0].date,
+		rates: monthRates,
+		average:
+			monthRates.reduce((sum, rate) => sum + rate.value, 0) / monthRates.length
+	}))
 }
 
 async function getUserDailyRates(
-	database: Database['users'],
+	database: Database,
 	userId: number | null,
 	since: Date,
 	to: Date
 ) {
-	const stages: Document[] = [
-		$.match({
-			$expr: $.ne([$.size('$dayRates'), 0])
-		}),
-		$.unwind('dayRates'),
-		$.sort('dayRates.date', 1),
-		$.match({ 'dayRates.date': $.gte(since) }),
-		$.match({ 'dayRates.date': $.lt(to) }),
-		{ $replaceRoot: { newRoot: '$dayRates' } },
-		$.project({ date: 1, value: 1 })
-	]
-	if (userId !== null) {
-		stages.unshift($.match({ userId }))
-	}
-	return await database
-		.aggregate<{ date: Date; value: number }>(stages)
-		.toArray()
+	const rates = await getRatesInRange(database, userId, since, to)
+	return rates.map(({ date, value }) => ({ date, value }))
 }
 
 export { getAverageLifeQuality, getUserMonthlyRates, getUserDailyRates }

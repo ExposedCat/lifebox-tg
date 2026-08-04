@@ -1,10 +1,10 @@
 import { Composer } from 'grammy'
 
-import type { CustomContext } from '../types/index.js'
 import {
 	createGroupIfNotExists,
 	createUserIfNotExists
 } from '../services/index.js'
+import type { CustomContext } from '../types/index.js'
 
 const middleware = new Composer<CustomContext>()
 middleware
@@ -12,23 +12,13 @@ middleware
 	.use(async (ctx, next) => {
 		const { db } = ctx
 		const chatId = ctx.chat.id
-		await createGroupIfNotExists(db.groups, chatId, ctx.chat.type === 'channel')
+		await createGroupIfNotExists(db, chatId, ctx.chat.type === 'channel')
 		if (ctx.from) {
-			await createUserIfNotExists(
-				db.users,
-				ctx.from.id,
-				ctx.from.first_name,
-				chatId
-			)
+			await createUserIfNotExists(db, ctx.from.id, ctx.from.first_name, chatId)
 		}
 		const target = ctx.message?.reply_to_message?.from
 		if (target) {
-			await createUserIfNotExists(
-				db.users,
-				target.id,
-				target.first_name,
-				chatId
-			)
+			await createUserIfNotExists(db, target.id, target.first_name, chatId)
 		}
 		await next()
 	})

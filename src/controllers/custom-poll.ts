@@ -1,10 +1,10 @@
-import { Composer } from 'grammy'
 import type { I18n } from '@grammyjs/i18n'
+import { Composer } from 'grammy'
 
 import { fetchGroups } from '../services/index.js'
+import { proxyPoll } from '../services/telegram/proxy-poll.js'
 import { resendPoll } from '../services/telegram/send-poll-job.js'
 import type { CustomContext } from '../types/index.js'
-import { proxyPoll } from '../services/telegram/proxy-poll.js'
 
 function sendCustomPollController(i18n: I18n) {
 	const controller = new Composer<CustomContext>()
@@ -38,15 +38,11 @@ function sendCustomPollController(i18n: I18n) {
 				return
 			}
 
-			const groups = fetchGroups(ctx.db.groups)
+			const groups = await fetchGroups(ctx.db)
 			let totalGroups = 0
 			let globalTotalGroups = 0
 			let success = 0
-			while (await groups.hasNext()) {
-				const group = await groups.next()
-				if (!group) {
-					break
-				}
+			for (const group of groups) {
 				globalTotalGroups += 1
 				if (!group.settings.receiveCustomPolls) {
 					continue
@@ -54,7 +50,7 @@ function sendCustomPollController(i18n: I18n) {
 				totalGroups += 1
 				try {
 					await resendPoll({
-						users: ctx.db.users,
+						database: ctx.db,
 						group,
 						api: ctx.api,
 						i18n,

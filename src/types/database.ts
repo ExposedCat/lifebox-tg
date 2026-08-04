@@ -1,4 +1,4 @@
-import type { Collection } from 'mongodb'
+import type { Kysely } from 'kysely'
 
 type Group = {
 	groupId: number
@@ -17,7 +17,7 @@ type Poll = {
 }
 
 type DayRate = {
-	pollId: number
+	pollId: string
 	date: Date
 	value: number
 }
@@ -27,6 +27,48 @@ type User = {
 	name: string | undefined
 	groups: number[]
 	dayRates: DayRate[]
+}
+
+type DatabaseSchema = {
+	users: {
+		user_id: number
+		name: string | null
+		mongo_id: string
+	}
+	user_groups: {
+		user_id: number
+		group_index: number
+		group_id: number
+	}
+	day_rates: {
+		user_id: number
+		rate_index: number
+		poll_id: string
+		date: number | null
+		value: number | null
+	}
+	groups: {
+		group_id: number
+		is_channel: number
+		receive_custom_polls: number
+		receive_daily_polls: number
+		mongo_id: string
+	}
+	group_tag_users: {
+		group_id: number
+		user_index: number
+		user_id: number
+	}
+	polls: {
+		poll_id: string
+		message_id: number | null
+		date: number
+		mongo_id: string
+	}
+	migration_state: {
+		name: string
+		completed_at: number
+	}
 }
 
 enum ValueState {
@@ -45,11 +87,7 @@ type UserLifeQuality = {
 	lifeQuality: number
 }
 
-type Database = {
-	users: Collection<User>
-	groups: Collection<Group>
-	polls: Collection<Poll>
-}
+type Database = Kysely<DatabaseSchema>
 
 export {
 	Group,
@@ -58,6 +96,7 @@ export {
 	UserProfile,
 	UserLifeQuality,
 	Database,
+	DatabaseSchema,
 	ValueState,
 	DayRate
 }

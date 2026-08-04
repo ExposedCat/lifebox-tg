@@ -23,9 +23,13 @@ services:
       - .env
     environment:
       DB_CONNECTION_STRING: mongodb://lifebox_db:27017/lifebox
+      SQLITE_PATH: /data/lifebox.sqlite
     init: true
     ports:
       - "127.0.0.1:8081:8081"
+    volumes:
+      - lifebox-sqlite-data:/data
 
 volumes:
   lifebox-mongo-data:
+  lifebox-sqlite-data:

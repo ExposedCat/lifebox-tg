@@ -1,16 +1,16 @@
 import { Composer, InlineKeyboard, InputFile } from 'grammy'
 
-import type { CustomContext } from '../types/index.js'
+import { generateChart } from '../services/charts.js'
 import { fetchUserRatesGraph } from '../services/database/user.graph.js'
 import { createUserIfNotExists } from '../services/index.js'
-import { generateChart } from '../services/charts.js'
+import type { CustomContext } from '../types/index.js'
 
 const controller = new Composer<CustomContext>()
 controller
 	.chatType(['supergroup', 'group'])
 	.callbackQuery(/compare(?:_\d+)+/, async ctx => {
 		await createUserIfNotExists(
-			ctx.db.users,
+			ctx.db,
 			ctx.callbackQuery.from.id,
 			ctx.callbackQuery.from.first_name,
 			ctx.chat.id
@@ -25,7 +25,7 @@ controller
 		}
 		const allUserIds = [...targetUserIds, ctx.callbackQuery.from.id]
 		const { userDatasets, averagePoints } = await fetchUserRatesGraph({
-			database: ctx.db.users,
+			database: ctx.db,
 			userIds: allUserIds,
 			mode: 'halfYear'
 		})

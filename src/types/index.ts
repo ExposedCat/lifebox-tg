@@ -6,6 +6,7 @@ export {
 	Poll,
 	UserProfile,
 	Database,
+	DatabaseSchema,
 	ValueState,
 	UserLifeQuality,
 	DayRate

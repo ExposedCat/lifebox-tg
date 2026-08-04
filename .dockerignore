@@ -3,3 +3,6 @@ build
 .git
 .env
 npm-debug.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

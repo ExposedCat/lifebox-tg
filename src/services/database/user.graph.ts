@@ -1,5 +1,4 @@
-import type { Database, User, UserLifeQuality } from '../../types/index.js'
-import { DbQueryBuilder as $ } from '../../helpers/index.js'
+import type { Database, UserLifeQuality } from '../../types/index.js'
 import type { Dataset, Point } from '../charts.js'
 
 function valuesAverage(array: { value: number }[]) {
@@ -8,9 +7,10 @@ function valuesAverage(array: { value: number }[]) {
 }
 
 const forceNonNegative = (it: number) => (it > 0 ? it : 0)
+const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
 
 export async function fetchUserRatesGraph(args: {
-	database: Database['users']
+	database: Database
 	userIds: number[]
 	mode: 'week' | 'month' | 'halfYear' | 'year' | 'all'
 }) {
@@ -23,39 +23,53 @@ export async function fetchUserRatesGraph(args: {
 		all: new Date(new Date().setFullYear(2004))
 	}[mode]
 
-	const users = await database
-		.aggregate<User>([
-			$.match({ userId: $.in(userIds) }),
-			$.nestedSort('dayRates', 'date'),
-			$.addFields({
-				dayRates: $.filter(
-					'dayRates',
-					'dayRate',
-					$.cond.gte('dayRate.date', maxRates)
-				)
-			})
-		])
-		.toArray()
+	const [users, userRates, allRates] = await Promise.all([
+		database
+			.selectFrom('users')
+			.select(['user_id', 'name'])
+			.where('user_id', 'in', userIds)
+			.execute(),
+		database
+			.selectFrom('day_rates')
+			.select(['user_id', 'date', 'value'])
+			.where('user_id', 'in', userIds)
+			.where('date', '>=', maxRates.getTime())
+			.where('date', 'is not', null)
+			.where('value', 'is not', null)
+			.orderBy('date')
+			.orderBy('rate_index')
+			.execute(),
+		database
+			.selectFrom('day_rates')
+			.select(['date', 'value'])
+			.where('date', '>=', maxRates.getTime())
+			.where('date', 'is not', null)
+			.where('value', 'is not', null)
+			.orderBy('date')
+			.execute()
+	])
 
-	const average = await database
-		.aggregate<Point>([
-			$.unwind('dayRates'),
-			$.group({
-				_id: '$dayRates.date',
-				value: $.avg('dayRates.value')
-			}),
-			$.match({
-				_id: $.gte(maxRates)
-			}),
-			$.project({
-				_id: 0,
-				date: '$_id',
-				value: 1
-			}),
-			$.sort('date')
-		])
-		.toArray()
+	const ratesByUser = new Map<number, Point[]>()
+	for (const rate of userRates) {
+		if (rate.date === null || rate.value === null) continue
+		const rates = ratesByUser.get(rate.user_id) ?? []
+		rates.push({ date: new Date(rate.date), value: rate.value })
+		ratesByUser.set(rate.user_id, rates)
+	}
 
+	const valuesByDate = new Map<number, number[]>()
+	for (const rate of allRates) {
+		if (rate.date === null || rate.value === null) continue
+		const values = valuesByDate.get(rate.date) ?? []
+		values.push(rate.value)
+		valuesByDate.set(rate.date, values)
+	}
+	const average: Point[] = [...valuesByDate.entries()].map(
+		([date, values]) => ({
+			date: new Date(date),
+			value: values.reduce((sum, value) => sum + value, 0) / values.length
+		})
+	)
 	if (average.length === 1) {
 		average.push(average[0])
 	}
@@ -75,51 +89,53 @@ export async function fetchUserRatesGraph(args: {
 		}))
 
 	const userDatasets: Dataset[] = users.map(user => ({
-		userId: user.userId,
-		label: user.name ?? `User#${user.userId}`,
-		points: mapToAverage(user.dayRates)
+		userId: user.user_id,
+		label: user.name ?? `User#${user.user_id}`,
+		points: mapToAverage(ratesByUser.get(user.user_id) ?? [])
 	}))
 	const averagePoints: Point[] = mapToAverage(average)
 
 	return { userDatasets, averagePoints }
 }
 
-export async function getTopLifeUsers(
-	database: Database['users'],
-	groupId: number
-) {
-	const aggregation = database.aggregate<{
-		list: UserLifeQuality[]
-		average: number
-	}>([
-		$.match({
-			groups: groupId,
-			$expr: {
-				$ne: [{ $size: '$dayRates' }, 0]
-			}
-		}),
-		$.project({
-			_id: 0,
-			name: 1,
-			lifeQuality: $.round(
-				$.divide($.sum('$dayRates.value'), $.size('$dayRates')),
-				1
+export async function getTopLifeUsers(database: Database, groupId: number) {
+	const rows = await database
+		.selectFrom('users')
+		.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
+		.innerJoin('day_rates', 'day_rates.user_id', 'users.user_id')
+		.select(['users.user_id', 'users.name', 'day_rates.value'])
+		.where('user_groups.group_id', '=', groupId)
+		.execute()
+
+	const users = new Map<
+		number,
+		{ name: string | null; values: (number | null)[] }
+	>()
+	for (const row of rows) {
+		const user = users.get(row.user_id) ?? { name: row.name, values: [] }
+		user.values.push(row.value)
+		users.set(row.user_id, user)
+	}
+
+	const allUsers: UserLifeQuality[] = [...users.values()]
+		.map(user => ({
+			name: user.name ?? undefined,
+			lifeQuality: roundOneDecimal(
+				user.values.reduce<number>((sum, value) => sum + (value ?? 0), 0) /
+					user.values.length
 			)
-		}),
-		$.sort('lifeQuality', -1),
-		$.group({
-			_id: null,
-			average: $.avg('lifeQuality'),
-			list: $.push('$$ROOT')
-		}),
-		$.project({
-			_id: 0,
-			list: $.slice('list', Number(process.env.RATING_LIMIT)),
-			average: $.round('$average', 1)
-		})
-	])
+		}))
+		.sort((a, b) => b.lifeQuality - a.lifeQuality)
 
-	const [data] = await aggregation.toArray()
+	if (allUsers.length === 0) {
+		return { list: [], average: 0 }
+	}
 
-	return data || { list: [], average: 0 }
+	const average = roundOneDecimal(
+		allUsers.reduce((sum, user) => sum + user.lifeQuality, 0) / allUsers.length
+	)
+	return {
+		list: allUsers.slice(0, Number(process.env.RATING_LIMIT)),
+		average
+	}
 }

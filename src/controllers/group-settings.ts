@@ -127,13 +127,13 @@ async function applySetting(
 	}
 
 	if (option.id === 'daily_polls') {
-		await updateGroupDailyPollsSetting(ctx.db.groups, group, value)
+		await updateGroupDailyPollsSetting(ctx.db, group, value)
 		group.settings.receiveDailyPolls = value
 		return true
 	}
 
 	if (option.id === 'custom_polls') {
-		await updateGroupCustomPollsSetting(ctx.db.groups, group, value)
+		await updateGroupCustomPollsSetting(ctx.db, group, value)
 		group.settings.receiveCustomPolls = value
 		return true
 	}
@@ -142,7 +142,7 @@ async function applySetting(
 		return false
 	}
 
-	await updateGroupTagUsersSetting(ctx.db.groups, group, ctx.from.id, value)
+	await updateGroupTagUsersSetting(ctx.db, group, ctx.from.id, value)
 	group.settings.tagUsers = value
 		? [
 				...group.settings.tagUsers.filter(user => user.userId !== ctx.from?.id),
@@ -156,7 +156,7 @@ async function applySetting(
 settingsController
 	.chatType(['supergroup', 'group'])
 	.command('settings', async ctx => {
-		const group = await getGroup(ctx.db.groups, ctx.chat.id)
+		const group = await getGroup(ctx.db, ctx.chat.id)
 		if (!group) {
 			await ctx.text('error.chatNotFound')
 		} else {
@@ -168,7 +168,7 @@ for (const command of SETTING_COMMANDS) {
 	settingsController
 		.chatType(['supergroup', 'group'])
 		.command(command, async ctx => {
-			const group = await getGroup(ctx.db.groups, ctx.chat.id)
+			const group = await getGroup(ctx.db, ctx.chat.id)
 			if (!group) {
 				await ctx.text('error.chatNotFound')
 				return

@@ -1,15 +1,14 @@
 import { Composer } from 'grammy'
 
+import { getTopLifeUsers, getValueState } from '../services/index.js'
 import type { CustomContext } from '../types/index.js'
-import { getValueState, getTopLifeUsers } from '../services/index.js'
 
 const controller = new Composer<CustomContext>()
 controller
 	.chatType(['supergroup', 'group'])
 	.command('life_quality', async ctx => {
 		const groupId = ctx.chat.id
-		const userDb = ctx.db.users
-		const { list, average } = await getTopLifeUsers(userDb, groupId)
+		const { list, average } = await getTopLifeUsers(ctx.db, groupId)
 		if (!list.length) {
 			await ctx.text('error.usersNotFound')
 		} else {

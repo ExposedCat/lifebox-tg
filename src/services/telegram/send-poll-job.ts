@@ -1,13 +1,14 @@
-import cron from 'node-schedule'
-import { setTimeout } from 'timers/promises'
+import type { I18n } from '@grammyjs/i18n/dist/source'
 import type { Api, GrammyError } from 'grammy'
 import type { InputPollOption } from 'grammy/types'
-import type { I18n } from '@grammyjs/i18n/dist/source'
+import cron from 'node-schedule'
+import { setTimeout } from 'timers/promises'
 
 import type { Database, Group } from '../../types/index.js'
 import { TelegramApiError } from '../../types/index.js'
-import { fetchGroups } from '../index.js'
+import { createPoll, getPollByDate } from '../database/poll.js'
 import { getUserNames } from '../database/user.names.js'
+import { fetchGroups } from '../index.js'
 
 const WORD_JOINER = '\u2060'
 
@@ -73,14 +74,14 @@ function isChatNotFoundError(object: unknown) {
 }
 
 async function resendPoll(args: {
-	users: Database['users']
+	database: Database
 	group: Group
 	api: Api
 	i18n: I18n
 	messageId: number
 	firstGroupId: number
 }) {
-	const { users, api, i18n, group, firstGroupId, messageId } = args
+	const { database, api, i18n, group, firstGroupId, messageId } = args
 	if (group.isChannel) {
 		await api.sendMessage(
 			group.groupId,
@@ -103,7 +104,7 @@ async function resendPoll(args: {
 		await api.forwardMessage(group.groupId, firstGroupId, messageId)
 		if (group.settings.tagUsers.length !== 0) {
 			const names = await getUserNames(
-				users,
+				database,
 				group.settings.tagUsers.map(user => user.userId)
 			)
 			await api.sendMessage(
@@ -128,7 +129,7 @@ async function initializePoll(api: Api, i18n: I18n, database: Database) {
 	const firstGroupId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
 
 	const date = new Date(new Date().toDateString())
-	const existingPoll = await database.polls.findOne({ date })
+	const existingPoll = await getPollByDate(database, date)
 	if (existingPoll && existingPoll.messageId) {
 		return { messageId: existingPoll.messageId }
 	}
@@ -162,7 +163,7 @@ async function initializePoll(api: Api, i18n: I18n, database: Database) {
 		return { messageId }
 	}
 
-	await database.polls.insertOne({ pollId, messageId, date })
+	await createPoll(database, { pollId, messageId, date })
 
 	return { messageId }
 }
@@ -181,9 +182,10 @@ async function sendPoll(
 		try {
 			let messageId = pollMessageId
 			if (!messageId) {
-				const poll = await database.polls.findOne({
-					date: new Date(new Date().toDateString())
-				})
+				const poll = await getPollByDate(
+					database,
+					new Date(new Date().toDateString())
+				)
 				if (poll) {
 					messageId = poll.messageId
 				} else {
@@ -203,7 +205,7 @@ async function sendPoll(
 				}
 			}
 			await resendPoll({
-				users: database.users,
+				database,
 				api,
 				i18n,
 				group,
@@ -227,24 +229,21 @@ async function populatePoll(api: Api, i18n: I18n, database: Database) {
 	if (messageId === null) {
 		return { totalGroups, success }
 	}
-	const groups = fetchGroups(database.groups)
-	while (await groups.hasNext()) {
-		const group = await groups.next()
-		if (group) {
-			if (group.groupId === firstGroupId) {
-				continue
-			}
-			if (!group.settings.receiveDailyPolls) {
-				continue
-			}
-			totalGroups += 1
-			try {
-				await sendPoll(api, i18n, database, group, messageId)
-				success += 1
-				await setTimeout(1_000)
-			} catch {
-				// Ignore
-			}
+	const groups = await fetchGroups(database)
+	for (const group of groups) {
+		if (group.groupId === firstGroupId) {
+			continue
+		}
+		if (!group.settings.receiveDailyPolls) {
+			continue
+		}
+		totalGroups += 1
+		try {
+			await sendPoll(api, i18n, database, group, messageId)
+			success += 1
+			await setTimeout(1_000)
+		} catch {
+			// Ignore
 		}
 	}
 
