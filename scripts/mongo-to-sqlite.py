@@ -58,7 +58,7 @@ def read_mongo_data(connection_string: str) -> MongoData:
 
     client = MongoClient(connection_string, tz_aware=True)
     try:
-        mongo = client.get_default_database(default="test")
+        mongo = client.get_default_database(default="lifebox")
         return {
             "users": list(mongo["users"].find({})),
             "groups": list(mongo["groups"].find({})),
