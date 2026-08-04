@@ -11,3 +11,7 @@ node_modules
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+# Python cache
+__pycache__/
+*.py[cod]

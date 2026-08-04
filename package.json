@@ -6,7 +6,6 @@
 	"scripts": {
 		"build": "tsc && npm run copyFiles",
 		"start": "npm run build && node .",
-		"migrate:mongo-to-sqlite": "npm run build && node build/migrations/mongo-to-sqlite.js",
 		"format": "npx biome format src/ --write && npx biome lint src/ --write",
 		"copyFiles": "cp -r src/locales build"
 	},
@@ -31,7 +30,6 @@
 		"@biomejs/biome": "^1.9.4",
 		"@grammyjs/i18n": "^0.5.1",
 		"@grammyjs/transformer-throttler": "^1.1.2",
-		"better-sqlite3": "^11.7.0",
 		"chartjs-to-image": "^1.2.1",
 		"dotenv": "^16.0.1",
 		"gm": "^1.25.0",
@@ -40,7 +38,6 @@
 		"node-schedule": "^2.1.0"
 	},
 	"devDependencies": {
-		"@types/better-sqlite3": "^7.6.12",
 		"@types/gm": "^1.25.4",
 		"@types/node": "^18.7.4",
 		"@types/node-schedule": "^2.1.0",

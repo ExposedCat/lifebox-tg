@@ -29,10 +29,16 @@ If you do not need host access to the API endpoint, you can remove the `ports` s
 
 ## Migrate MongoDB to SQLite
 
+Install the MongoDB driver once:
+
+```bash
+python3 -m pip install -r requirements-migration.txt
+```
+
 Set `DB_CONNECTION_STRING` and, optionally, `SQLITE_PATH` in `.env`, then run:
 
 ```bash
-npm run migrate:mongo-to-sqlite
+python3 scripts/mongo-to-sqlite.py
 ```
 
 The migration only reads MongoDB. It replaces the LifeBox rows in SQLite in a
