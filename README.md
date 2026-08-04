@@ -26,3 +26,15 @@ This is mapped as `127.0.0.1:8081:8081` in `compose.yaml`, which keeps it reacha
 If you do not need host access to the API endpoint, you can remove the `ports` section from `lifebox_bot`.
 
 `compose.yaml` overrides `DB_CONNECTION_STRING` for the bot service to use the internal MongoDB host (`lifebox_db`), so your regular local `.env` value can stay unchanged.
+
+## Migrate MongoDB to SQLite
+
+Set `DB_CONNECTION_STRING` and, optionally, `SQLITE_PATH` in `.env`, then run:
+
+```bash
+npm run migrate:mongo-to-sqlite
+```
+
+The migration only reads MongoDB. It replaces the LifeBox rows in SQLite in a
+single transaction, then reads every migrated SQLite table and logs its contents.
+`SQLITE_PATH` defaults to `telegram-bot.sqlite`.

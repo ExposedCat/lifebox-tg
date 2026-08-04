@@ -6,3 +6,8 @@ node_modules
 
 # Sensitive data
 .env
+
+# SQLite data
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
