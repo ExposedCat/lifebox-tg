@@ -7,7 +7,10 @@ export {
 	updateUserDayRate,
 	getUserProfile
 } from './database/user.crud.js'
-export { getTopLifeUsers } from './database/user.graph.js'
+export {
+	getLifeQualityBoards,
+	getTopLifeUsers
+} from './database/user.graph.js'
 
 export { getAverageLifeQuality } from './database/statistics.js'
 

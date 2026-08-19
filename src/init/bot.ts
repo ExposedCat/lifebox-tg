@@ -19,6 +19,7 @@ const GROUP_COMMANDS: BotCommand[] = [
 	{ command: 'start', description: 'Start the bot' },
 	{ command: 'profile', description: 'Show your profile' },
 	{ command: 'history', description: 'Show your rating history' },
+	{ command: 'boards', description: 'Show the group leaderboards' },
 	{
 		command: 'life_quality',
 		description: 'Show the group life quality rating'
@@ -71,6 +72,7 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.start)
 	bot.use(handlers.profile)
 	bot.use(handlers.history)
+	bot.use(handlers.boards)
 	bot.use(handlers.lifeQuality)
 	bot.use(handlers.recapController)
 	bot.use(handlers.explainRecapController)

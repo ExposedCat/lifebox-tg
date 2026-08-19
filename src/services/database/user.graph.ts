@@ -9,6 +9,77 @@ function valuesAverage(array: { value: number }[]) {
 const forceNonNegative = (it: number) => (it > 0 ? it : 0)
 const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
 
+const BOARD_SIZE = 10
+const EXTREME_AVERAGE = 2
+const EXTREME_TOLERANCE = 0.1
+
+export type BoardUser = {
+	userId: number
+	name: string | null
+	average: number
+	rateCount: number
+}
+
+export type LifeQualityBoards = {
+	happiest: BoardUser[]
+	saddest: BoardUser[]
+	idiots: BoardUser[]
+}
+
+function isExtremeAverage(average: number) {
+	return (
+		Math.abs(Math.abs(average) - EXTREME_AVERAGE) <=
+		EXTREME_TOLERANCE + Number.EPSILON
+	)
+}
+
+export async function getLifeQualityBoards(
+	database: Database,
+	groupId: number
+): Promise<LifeQualityBoards> {
+	const rows = await database
+		.selectFrom('users')
+		.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
+		.innerJoin('day_rates', 'day_rates.user_id', 'users.user_id')
+		.select([
+			'users.user_id',
+			'users.name',
+			database.fn.avg('day_rates.value').as('average'),
+			database.fn.count<number>('day_rates.value').as('rate_count')
+		])
+		.where('user_groups.group_id', '=', groupId)
+		.where('day_rates.value', 'is not', null)
+		.groupBy(['users.user_id', 'users.name'])
+		.execute()
+
+	const users: BoardUser[] = rows.map(row => ({
+		userId: row.user_id,
+		name: row.name,
+		average: Number(row.average),
+		rateCount: Number(row.rate_count)
+	}))
+	const idiots = users.filter(user => isExtremeAverage(user.average))
+	const rankedUsers = users.filter(user => !isExtremeAverage(user.average))
+	const byUserId = (a: BoardUser, b: BoardUser) => a.userId - b.userId
+
+	return {
+		happiest: [...rankedUsers]
+			.sort((a, b) => b.average - a.average || byUserId(a, b))
+			.slice(0, BOARD_SIZE),
+		saddest: [...rankedUsers]
+			.sort((a, b) => a.average - b.average || byUserId(a, b))
+			.slice(0, BOARD_SIZE),
+		idiots: [...idiots]
+			.sort(
+				(a, b) =>
+					Math.abs(b.average) - Math.abs(a.average) ||
+					b.rateCount - a.rateCount ||
+					byUserId(a, b)
+			)
+			.slice(0, BOARD_SIZE)
+	}
+}
+
 export async function fetchUserRatesGraph(args: {
 	database: Database
 	userIds: number[]
