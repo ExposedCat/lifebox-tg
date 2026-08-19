@@ -12,6 +12,7 @@ import * as middlewares from '../middlewares/index.js'
 
 const PRIVATE_COMMANDS: BotCommand[] = [
 	{ command: 'start', description: 'Start the bot' },
+	{ command: 'global_boards', description: 'Show the global leaderboards' },
 	{ command: 'wrapped', description: 'Open your yearly Wrapped' }
 ]
 
@@ -19,7 +20,8 @@ const GROUP_COMMANDS: BotCommand[] = [
 	{ command: 'start', description: 'Start the bot' },
 	{ command: 'profile', description: 'Show your profile' },
 	{ command: 'history', description: 'Show your rating history' },
-	{ command: 'boards', description: 'Show the group leaderboards' },
+	{ command: 'chat_boards', description: "Show this chat's leaderboards" },
+	{ command: 'global_boards', description: 'Show the global leaderboards' },
 	{
 		command: 'life_quality',
 		description: 'Show the group life quality rating'

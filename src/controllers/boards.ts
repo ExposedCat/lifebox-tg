@@ -5,9 +5,8 @@ import { generateBoardsChart } from '../services/charts.js'
 import { getLifeQualityBoards } from '../services/index.js'
 import type { CustomContext } from '../types/index.js'
 
-const controller = new Composer<CustomContext>()
-controller.chatType(['supergroup', 'group']).command('boards', async ctx => {
-	const boards = await getLifeQualityBoards(ctx.db, ctx.chat.id)
+async function sendBoards(ctx: CustomContext, groupId: number | null) {
+	const boards = await getLifeQualityBoards(ctx.db, groupId)
 	if (
 		boards.happiest.length === 0 &&
 		boards.saddest.length === 0 &&
@@ -45,6 +44,12 @@ controller.chatType(['supergroup', 'group']).command('boards', async ctx => {
 	} finally {
 		await fs.rm(chartFile, { force: true })
 	}
-})
+}
+
+const controller = new Composer<CustomContext>()
+controller.command('global_boards', ctx => sendBoards(ctx, null))
+controller
+	.chatType(['supergroup', 'group'])
+	.command('chat_boards', ctx => sendBoards(ctx, ctx.chat.id))
 
 export { controller }

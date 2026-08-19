@@ -35,11 +35,10 @@ function isExtremeAverage(average: number) {
 
 export async function getLifeQualityBoards(
 	database: Database,
-	groupId: number
+	groupId: number | null
 ): Promise<LifeQualityBoards> {
-	const rows = await database
+	const query = database
 		.selectFrom('users')
-		.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
 		.innerJoin('day_rates', 'day_rates.user_id', 'users.user_id')
 		.select([
 			'users.user_id',
@@ -47,8 +46,13 @@ export async function getLifeQualityBoards(
 			database.fn.avg('day_rates.value').as('average'),
 			database.fn.count<number>('day_rates.value').as('rate_count')
 		])
-		.where('user_groups.group_id', '=', groupId)
 		.where('day_rates.value', 'is not', null)
+	const rows = await (groupId === null
+		? query
+		: query
+				.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
+				.where('user_groups.group_id', '=', groupId)
+	)
 		.groupBy(['users.user_id', 'users.name'])
 		.execute()
 
