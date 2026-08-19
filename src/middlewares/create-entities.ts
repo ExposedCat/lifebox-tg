@@ -16,10 +16,6 @@ middleware
 		if (ctx.from) {
 			await createUserIfNotExists(db, ctx.from.id, ctx.from.first_name, chatId)
 		}
-		const target = ctx.message?.reply_to_message?.from
-		if (target) {
-			await createUserIfNotExists(db, target.id, target.first_name, chatId)
-		}
 		await next()
 	})
 

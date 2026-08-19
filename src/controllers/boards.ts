@@ -24,17 +24,14 @@ async function sendBoards(ctx: CustomContext, groupId: number | null) {
 	const chartFile = await generateBoardsChart([
 		{
 			title: 'Happiest',
-			accent: '#16a34a',
 			entries: toChartEntries(boards.happiest)
 		},
 		{
 			title: 'Saddest',
-			accent: '#2563eb',
 			entries: toChartEntries(boards.saddest)
 		},
 		{
 			title: 'Idiots',
-			accent: '#dc2626',
 			entries: toChartEntries(boards.idiots)
 		}
 	])

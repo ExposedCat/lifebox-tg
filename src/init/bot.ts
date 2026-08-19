@@ -75,6 +75,7 @@ function setupControllers(bot: Bot, i18n: I18n) {
 	bot.use(handlers.profile)
 	bot.use(handlers.history)
 	bot.use(handlers.boards)
+	bot.use(handlers.syncUser)
 	bot.use(handlers.lifeQuality)
 	bot.use(handlers.recapController)
 	bot.use(handlers.explainRecapController)

@@ -6,6 +6,7 @@ export { controller as botAdded } from './new-member.js'
 export { controller as rateDate } from './rate-day.js'
 export { controller as history } from './history.js'
 export { controller as boards } from './boards.js'
+export { controller as syncUser } from './sync-user.js'
 export { controller as compareGraphs } from './compare-graph.js'
 export {
 	sendPollForceController,

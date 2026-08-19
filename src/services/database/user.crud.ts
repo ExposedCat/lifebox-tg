@@ -56,6 +56,7 @@ export async function createUserIfNotExists(
 export async function updateUserDayRate(
 	database: Database,
 	id: number,
+	name: string,
 	pollId: string,
 	value: number,
 	date: Date
@@ -63,8 +64,8 @@ export async function updateUserDayRate(
 	await database.transaction().execute(async transaction => {
 		await transaction
 			.insertInto('users')
-			.values({ user_id: id, name: null })
-			.onConflict(conflict => conflict.column('user_id').doNothing())
+			.values({ user_id: id, name })
+			.onConflict(conflict => conflict.column('user_id').doUpdateSet({ name }))
 			.execute()
 
 		const existingRate = await transaction
