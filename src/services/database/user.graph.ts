@@ -10,6 +10,7 @@ const forceNonNegative = (it: number) => (it > 0 ? it : 0)
 const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
 
 const BOARD_SIZE = 10
+const MIN_BOARD_VOTES = 10
 const EXTREME_AVERAGE = 2
 const EXTREME_TOLERANCE = 0.1
 
@@ -37,6 +38,10 @@ export async function getLifeQualityBoards(
 	database: Database,
 	groupId: number | null
 ): Promise<LifeQualityBoards> {
+	const halfYearAgo = new Date()
+	halfYearAgo.setMonth(halfYearAgo.getMonth() - 6)
+	const rateCount = database.fn.count<number>('day_rates.value')
+	const lastRateDate = database.fn.max<number>('day_rates.date')
 	const query = database
 		.selectFrom('users')
 		.innerJoin('day_rates', 'day_rates.user_id', 'users.user_id')
@@ -44,7 +49,7 @@ export async function getLifeQualityBoards(
 			'users.user_id',
 			'users.name',
 			database.fn.avg('day_rates.value').as('average'),
-			database.fn.count<number>('day_rates.value').as('rate_count')
+			rateCount.as('rate_count')
 		])
 		.where('day_rates.value', 'is not', null)
 	const rows = await (groupId === null
@@ -54,6 +59,8 @@ export async function getLifeQualityBoards(
 				.where('user_groups.group_id', '=', groupId)
 	)
 		.groupBy(['users.user_id', 'users.name'])
+		.having(rateCount, '>=', MIN_BOARD_VOTES)
+		.having(lastRateDate, '>=', halfYearAgo.getTime())
 		.execute()
 
 	const users: BoardUser[] = rows.map(row => ({
