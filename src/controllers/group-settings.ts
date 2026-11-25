@@ -1,193 +1,255 @@
-import { Composer } from 'grammy'
+import { Composer, GrammyError } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 
 import { getGroup } from '../services/database/group.crud.js'
 import { updateGroupCustomPollsSetting } from '../services/database/group.settings/custom-polls.js'
 import { updateGroupDailyPollsSetting } from '../services/database/group.settings/daily-polls.js'
 import { updateGroupTagUsersSetting } from '../services/database/group.settings/tag-users.js'
-import type { CustomContext, Group } from '../types/index.js'
-
-export const settingsController = new Composer<CustomContext>()
+import type { CustomContext, Database, Group } from '../types/index.js'
 
 type SettingOption = {
-	id: 'daily_polls' | 'custom_polls' | 'reminder'
-	labelKey: string
 	commandId: string
+	labelKey: string
 	adminOnly?: boolean
+	isEnabled: (group: Group, userId: number) => boolean
+	set: (
+		db: Database,
+		group: Group,
+		enabled: boolean,
+		userId: number
+	) => Promise<void>
 }
-
-const ENABLED_ICON = `<tg-emoji emoji-id="5825794181183836432">✔️</tg-emoji>`
-const DISABLED_ICON = `<tg-emoji emoji-id="5364330229043062830">➰</tg-emoji>`
-const SETTING_COMMAND_PATTERN = /^set_([a-z0-9]+)_(on|off)$/
 
 const OPTIONS: SettingOption[] = [
 	{
-		id: 'daily_polls',
-		labelKey: 'settings.option.dailyPolls',
 		commandId: 'dp',
-		adminOnly: true
+		labelKey: 'settings.option.dailyPolls',
+		adminOnly: true,
+		isEnabled: group => group.settings.receiveDailyPolls,
+		set: updateGroupDailyPollsSetting
 	},
 	{
-		id: 'custom_polls',
-		labelKey: 'settings.option.customPolls',
 		commandId: 'cp',
-		adminOnly: true
+		labelKey: 'settings.option.customPolls',
+		adminOnly: true,
+		isEnabled: group => group.settings.receiveCustomPolls,
+		set: updateGroupCustomPollsSetting
 	},
 	{
-		id: 'reminder',
+		commandId: 'rem',
 		labelKey: 'settings.option.reminder',
-		commandId: 'rem'
+		isEnabled: (group, userId) =>
+			group.settings.tagUsers.some(user => user.userId === userId),
+		set: (db, group, enabled, userId) =>
+			updateGroupTagUsersSetting(db, group, userId, enabled)
 	}
 ]
 
 const OPTION_BY_COMMAND_ID = new Map(
 	OPTIONS.map(option => [option.commandId, option])
 )
-const SETTING_COMMANDS = OPTIONS.flatMap(option => [
-	`set_${option.commandId}_on`,
-	`set_${option.commandId}_off`
-])
 
-function isAdmin(userId: number | undefined) {
-	return (
-		process.env.ADMIN_ID !== undefined &&
-		String(userId) === process.env.ADMIN_ID
-	)
+function canChangeSetting(option: SettingOption, userId: number) {
+	return !option.adminOnly || String(userId) === process.env.ADMIN_ID
 }
 
-function getCommandName(text: string) {
-	const [command] = text.split(/\s+/, 1)
-	return command?.replace(/^\//, '').split('@')[0]
+function escapeHtml(text: string) {
+	return text
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
 }
 
-function parseSettingCommand(text: string) {
-	const commandName = getCommandName(text)
-	const match = commandName?.match(SETTING_COMMAND_PATTERN)
-	if (!match) {
-		return null
-	}
-
-	const [, commandId, state] = match
-	const option = OPTION_BY_COMMAND_ID.get(commandId)
-	if (!option) {
-		return null
-	}
-
-	return { option, value: state === 'on' }
-}
-
-function isSettingEnabled(option: SettingOption, group: Group, userId: number) {
-	if (option.id === 'daily_polls') {
-		return group.settings.receiveDailyPolls
-	}
-
-	if (option.id === 'custom_polls') {
-		return group.settings.receiveCustomPolls
-	}
-
-	return group.settings.tagUsers.some(user => user.userId === userId)
-}
-
-function renderSettingsOptions(
+function settingsMessage(
 	ctx: CustomContext,
 	group: Group,
 	userId: number
-) {
-	return OPTIONS.map(option => {
-		const enabled = isSettingEnabled(option, group, userId)
-		const icon = enabled ? ENABLED_ICON : DISABLED_ICON
-		const nextState = enabled ? 'off' : 'on'
-		const suffix = option.adminOnly
-			? ` · ${ctx.i18n.t('settings.adminOnly')}`
-			: ''
-		return `${icon} ${ctx.i18n.t(option.labelKey)} /set_${option.commandId}_${nextState}${suffix}`
-	}).join('\n')
+): InputRichMessage {
+	const options = OPTIONS.filter(option => canChangeSetting(option, userId))
+		.map(option => {
+			const enabled = option.isEnabled(group, userId)
+			const style = enabled ? 'success' : 'danger'
+			const nextState = enabled ? 'off' : 'on'
+			const label = escapeHtml(ctx.i18n.t(option.labelKey))
+			const status = escapeHtml(
+				ctx.i18n.t(enabled ? 'settings.enabled' : 'settings.disabled')
+			)
+			return `<p>${label} <tg-button type="callback_data" style="${style}" data="settings:${option.commandId}:${nextState}:${userId}">${status}</tg-button></p>`
+		})
+		.join('\n')
+
+	return {
+		html: `<h2>${escapeHtml(ctx.i18n.t('settings.title'))}</h2>\n${options}`,
+		skip_entity_detection: true
+	}
 }
 
-async function replySettings(ctx: CustomContext, group: Group) {
-	if (!ctx.from) {
+function settingsReplyExtra(ctx: CustomContext, userId: number) {
+	const ephemeralId = ctx.message?.ephemeral_message_id
+	return {
+		ephemeral_message_parameters: { receiver_user_id: userId },
+		...(ephemeralId !== undefined && {
+			reply_parameters: { ephemeral_message_id: ephemeralId }
+		})
+	}
+}
+
+async function replySettings(ctx: CustomContext, group: Group, userId: number) {
+	const message = settingsMessage(ctx, group, userId)
+	try {
+		await ctx.replyWithRichMessage(message, settingsReplyExtra(ctx, userId))
+	} catch (error) {
+		// Regular commands may arrive without an ephemeral reply target in groups.
+		if (
+			ctx.message?.ephemeral_message_id !== undefined ||
+			!(error instanceof GrammyError) ||
+			(error.error_code !== 400 && error.error_code !== 403)
+		) {
+			throw error
+		}
+		await ctx.replyWithRichMessage(message)
+	}
+}
+
+export const settingsController = new Composer<CustomContext>()
+const groupCommands = settingsController.chatType(['group', 'supergroup'])
+
+groupCommands.command('settings', async ctx => {
+	if (!ctx.from) return
+
+	const group = await getGroup(ctx.db, ctx.chat.id)
+	if (!group) {
+		await ctx.text(
+			'error.chatNotFound',
+			{},
+			ctx.message.ephemeral_message_id === undefined
+				? {}
+				: settingsReplyExtra(ctx, ctx.from.id)
+		)
 		return
 	}
 
-	await ctx.text('state.groupSettings', {
-		options: renderSettingsOptions(ctx, group, ctx.from.id)
-	})
-}
+	await replySettings(ctx, group, ctx.from.id)
+})
 
-async function applySetting(
-	ctx: CustomContext,
-	group: Group,
-	option: SettingOption,
-	value: boolean
-) {
-	if (option.adminOnly && !isAdmin(ctx.from?.id)) {
-		await ctx.text('settings.optionAdminOnly', {
+settingsController.callbackQuery(/^settings:/, async ctx => {
+	const match = /^settings:([a-z0-9]+):(on|off):([1-9]\d*)$/.exec(
+		ctx.callbackQuery.data
+	)
+	const option = match && OPTION_BY_COMMAND_ID.get(match[1])
+	const userId = ctx.from.id
+	const chat = ctx.chat
+	const message = ctx.callbackQuery.message
+	if (!chat) {
+		await ctx.answerCallbackQuery()
+		return
+	}
+
+	async function alert(key: string, data?: { option: string }) {
+		await ctx.answerCallbackQuery({
+			text: ctx.i18n.t(key, data),
+			show_alert: true
+		})
+	}
+
+	if (
+		!match ||
+		!option ||
+		!message ||
+		message.date === 0 ||
+		(chat.type !== 'group' && chat.type !== 'supergroup')
+	) {
+		await alert('settings.invalidButton')
+		return
+	}
+	if (match[3] !== String(userId)) {
+		await alert('settings.ownMenu')
+		return
+	}
+	if (!canChangeSetting(option, userId)) {
+		await alert('settings.optionAdminOnly', {
 			option: ctx.i18n.t(option.labelKey)
 		})
-		return false
+		return
 	}
 
-	if (option.id === 'daily_polls') {
-		await updateGroupDailyPollsSetting(ctx.db, group, value)
-		group.settings.receiveDailyPolls = value
-		return true
-	}
-
-	if (option.id === 'custom_polls') {
-		await updateGroupCustomPollsSetting(ctx.db, group, value)
-		group.settings.receiveCustomPolls = value
-		return true
-	}
-
-	if (!ctx.from) {
-		return false
-	}
-
-	await updateGroupTagUsersSetting(ctx.db, group, ctx.from.id, value)
-	group.settings.tagUsers = value
-		? [
-				...group.settings.tagUsers.filter(user => user.userId !== ctx.from?.id),
-				{ userId: ctx.from.id }
-			]
-		: group.settings.tagUsers.filter(user => user.userId !== ctx.from?.id)
-
-	return true
-}
-
-settingsController
-	.chatType(['supergroup', 'group'])
-	.command('settings', async ctx => {
-		const group = await getGroup(ctx.db, ctx.chat.id)
+	let saved = false
+	try {
+		const group = await getGroup(ctx.db, chat.id)
 		if (!group) {
-			await ctx.text('error.chatNotFound')
-		} else {
-			await replySettings(ctx, group)
+			await alert('error.chatNotFound')
+			return
 		}
-	})
 
-for (const command of SETTING_COMMANDS) {
-	settingsController
-		.chatType(['supergroup', 'group'])
-		.command(command, async ctx => {
+		await option.set(ctx.db, group, match[2] === 'on', userId)
+		saved = true
+		const updated = await getGroup(ctx.db, chat.id)
+		if (!updated) {
+			await alert('settings.refreshFailed')
+			return
+		}
+
+		const richMessage = settingsMessage(ctx, updated, userId)
+		if (message.ephemeral_message_id !== undefined) {
+			await ctx.editEphemeralMessageText(richMessage)
+		} else {
+			await ctx.editMessageText(richMessage)
+		}
+	} catch (error) {
+		if (
+			!(
+				saved &&
+				error instanceof GrammyError &&
+				error.description.includes('message is not modified')
+			)
+		) {
+			console.error('Bot | Failed to update settings:', error)
+			await alert(saved ? 'settings.refreshFailed' : 'settings.saveFailed')
+			return
+		}
+	}
+	await ctx.answerCallbackQuery()
+})
+
+for (const option of OPTIONS) {
+	for (const state of ['on', 'off']) {
+		groupCommands.command(`set_${option.commandId}_${state}`, async ctx => {
+			if (!ctx.from) return
+			const userId = ctx.from.id
+			const extra =
+				ctx.message.ephemeral_message_id === undefined
+					? {}
+					: settingsReplyExtra(ctx, userId)
+
+			if (!canChangeSetting(option, userId)) {
+				await ctx.text(
+					'settings.optionAdminOnly',
+					{ option: ctx.i18n.t(option.labelKey) },
+					extra
+				)
+				return
+			}
+
 			const group = await getGroup(ctx.db, ctx.chat.id)
 			if (!group) {
-				await ctx.text('error.chatNotFound')
+				await ctx.text('error.chatNotFound', {}, extra)
 				return
 			}
 
-			const parsed = parseSettingCommand(ctx.message?.text ?? '')
-			if (!parsed) {
-				await replySettings(ctx, group)
+			try {
+				await option.set(ctx.db, group, state === 'on', userId)
+			} catch (error) {
+				console.error('Bot | Failed to save settings:', error)
+				await ctx.text('settings.saveFailed', {}, extra)
 				return
 			}
 
-			const updated = await applySetting(
-				ctx,
-				group,
-				parsed.option,
-				parsed.value
-			)
+			const updated = await getGroup(ctx.db, ctx.chat.id)
 			if (updated) {
-				await replySettings(ctx, group)
+				await replySettings(ctx, updated, userId)
+			} else {
+				await ctx.text('settings.refreshFailed', {}, extra)
 			}
 		})
+	}
 }

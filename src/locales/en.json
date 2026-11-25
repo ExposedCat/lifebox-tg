@@ -2,16 +2,21 @@
 	"state": {
 		"started": "Hello, ${username}!\nThis bot is the only one who cares about your life\nSee your /profile\nSee your life quality /history",
 		"recap-2024-explanation": "- Days rated: you rated this number of days\n- Average day rate: an average of all your rates since 2024.01.01\n- Happiness: comparison of your average rate to the average rate of all other users\n- Happiest and worst months: months with your highest and lowest (average) rates\n- In a row: number of days when your life quality* was raising/falling/remaining the same.\n\n*Life quality of a given day is an average rate of this and 6 previous days",
-		"wrapped": "Press the button above to view<a href=\"https://t.me/Lifebox_Robot/wrapped\"> </a>2025 Wrapped",
-		"groupSettings": "Group Settings:\n\n${options}\n\nClick command to toggle"
+		"wrapped": "Press the button above to view<a href=\"https://t.me/Lifebox_Robot/wrapped\"> </a>2025 Wrapped"
 	},
 	"settings": {
+		"title": "Group settings",
+		"enabled": "Enabled",
+		"disabled": "Disabled",
 		"option": {
 			"dailyPolls": "Receive daily polls",
 			"customPolls": "Receive custom polls",
 			"reminder": "Remind me to rate a day"
 		},
-		"adminOnly": "admin only",
+		"invalidButton": "This settings button is no longer available. Open /settings again.",
+		"ownMenu": "Open /settings to change your settings.",
+		"saveFailed": "Could not save the setting. Please try again.",
+		"refreshFailed": "Setting saved. Open /settings to see the current state.",
 		"optionAdminOnly": "\"${option}\" can only be changed by the admin."
 	},
 	"fetch": {

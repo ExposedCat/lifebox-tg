@@ -26,7 +26,11 @@ const GROUP_COMMANDS: BotCommand[] = [
 		command: 'life_quality',
 		description: 'Show the group life quality rating'
 	},
-	{ command: 'settings', description: "Configure this group's settings" },
+	{
+		command: 'settings',
+		description: "Configure this group's settings",
+		is_ephemeral: true
+	},
 	{ command: 'wrapped', description: 'Open your yearly Wrapped' },
 	{ command: 'explain', description: 'Explain Wrapped metrics' }
 ]

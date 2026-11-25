@@ -93,14 +93,19 @@ export async function getGroup(
 export async function updateGroupSettings(
 	database: Database,
 	group: Group,
-	changes: Partial<Group['settings']>
+	changes: Partial<
+		Pick<Group['settings'], 'receiveCustomPolls' | 'receiveDailyPolls'>
+	>
 ) {
-	const settings = { ...group.settings, ...changes }
 	await database
 		.updateTable('groups')
 		.set({
-			receive_custom_polls: Number(settings.receiveCustomPolls),
-			receive_daily_polls: Number(settings.receiveDailyPolls)
+			...(changes.receiveCustomPolls !== undefined && {
+				receive_custom_polls: Number(changes.receiveCustomPolls)
+			}),
+			...(changes.receiveDailyPolls !== undefined && {
+				receive_daily_polls: Number(changes.receiveDailyPolls)
+			})
 		})
 		.where('group_id', '=', group.groupId)
 		.execute()
