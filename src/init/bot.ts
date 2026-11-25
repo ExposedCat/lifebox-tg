@@ -1,14 +1,14 @@
-import type { I18n } from '@grammyjs/i18n'
-import { Bot as TelegramBot, session } from 'grammy'
+import path from 'node:path'
+import { I18n } from '@grammyjs/i18n'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
+import { Bot as TelegramBot, session } from 'grammy'
 import type { BotCommand } from 'grammy/types'
 
-import type { Bot, CustomContext, Database } from '../types/index.js'
-import { resolvePath } from '../helpers/index.js'
-import { initLocaleEngine } from './index.js'
-import * as handlers from '../controllers/index.js'
-import { createReplyWithTextFunc, startSendPollJob } from '../services/index.js'
-import * as middlewares from '../middlewares/index.js'
+import { APP_ENV } from '../config.ts'
+import * as handlers from '../controllers/index.ts'
+import * as middlewares from '../middlewares/index.ts'
+import { createReplyWithTextFunc, startSendPollJob } from '../services/index.ts'
+import type { Bot, CustomContext, Database } from '../types/index.ts'
 
 const PRIVATE_COMMANDS: BotCommand[] = [
 	{ command: 'start', description: 'Start the bot' },
@@ -49,7 +49,9 @@ function setupMiddlewares(bot: Bot, localeEngine: I18n) {
 	bot.use(session())
 	bot.use(middlewares.localeEngine(localeEngine))
 	bot.use(middlewares.createEntities)
-	bot.catch(error => console.error(`Bot | ${error.message}`))
+	bot.catch(({ error, ctx }) =>
+		console.error(`Bot | Update ${ctx.update.update_id} failed:`, error)
+	)
 }
 
 async function setupCommands(bot: Bot) {
@@ -87,16 +89,25 @@ function setupControllers(bot: Bot, i18n: I18n) {
 }
 
 async function startBot(database: Database) {
-	const localesPath = resolvePath(import.meta.url, '../locales')
-	const i18n = initLocaleEngine(localesPath)
-	const bot = new TelegramBot<CustomContext>(process.env.TOKEN)
+	const i18n = new I18n({
+		directory: path.join(import.meta.dir, '../locales'),
+		defaultLanguage: 'en',
+		defaultLanguageOnMissing: true,
+		useSession: true
+	})
+	const bot = new TelegramBot<CustomContext>(APP_ENV.TOKEN)
 	extendContext(bot, database)
 	setupMiddlewares(bot, i18n)
 	setupControllers(bot, i18n)
+	await bot.init()
 	await setupCommands(bot)
-	bot.start()
-	startSendPollJob(bot.api, i18n, database)
-	return bot
+	// Resolves only once polling stops; a rejection here is fatal.
+	bot.start().catch(error => {
+		console.error('Bot | Polling failed:', error)
+		process.exit(3)
+	})
+	const pollJob = startSendPollJob(bot.api, i18n, database)
+	return { bot, pollJob }
 }
 
 export { startBot }

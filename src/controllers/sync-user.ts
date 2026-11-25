@@ -1,11 +1,12 @@
 import { Composer } from 'grammy'
 
-import { createUserIfNotExists } from '../services/index.js'
-import type { CustomContext } from '../types/index.js'
+import { isAdmin } from '../config.ts'
+import { createUserIfNotExists } from '../services/index.ts'
+import type { CustomContext } from '../types/index.ts'
 
 const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).command('sync', async ctx => {
-	if (ctx.from.id !== Number(process.env.ADMIN_ID)) {
+	if (!isAdmin(ctx.from.id)) {
 		return
 	}
 

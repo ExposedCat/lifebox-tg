@@ -1,4 +1,12 @@
-import type { Database, Poll } from '../../types/index.js'
+import type { Database, DatabaseSchema, Poll } from '../../types/index.ts'
+
+function mapPoll(poll: DatabaseSchema['polls']): Poll {
+	return {
+		pollId: poll.poll_id,
+		messageId: poll.message_id ?? undefined,
+		date: new Date(poll.date)
+	}
+}
 
 export async function getPoll(
 	database: Database,
@@ -9,14 +17,7 @@ export async function getPoll(
 		.selectAll()
 		.where('poll_id', '=', pollId)
 		.executeTakeFirst()
-	if (!poll) {
-		return null
-	}
-	return {
-		pollId: poll.poll_id,
-		messageId: poll.message_id ?? undefined,
-		date: new Date(poll.date)
-	}
+	return poll ? mapPoll(poll) : null
 }
 
 export async function getPollByDate(
@@ -28,14 +29,7 @@ export async function getPollByDate(
 		.selectAll()
 		.where('date', '=', date.getTime())
 		.executeTakeFirst()
-	if (!poll) {
-		return null
-	}
-	return {
-		pollId: poll.poll_id,
-		messageId: poll.message_id ?? undefined,
-		date: new Date(poll.date)
-	}
+	return poll ? mapPoll(poll) : null
 }
 
 export async function createPoll(database: Database, poll: Poll) {

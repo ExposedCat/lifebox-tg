@@ -1,6 +1,6 @@
 import { Composer } from 'grammy'
 
-import type { CustomContext } from '../types/index.js'
+import type { CustomContext } from '../types/index.ts'
 
 const controller = new Composer<CustomContext>()
 controller

@@ -1,14 +1,12 @@
-export { CustomContext, CustomContextMethods } from './context.js'
-export { Bot, Handler, Extra } from './telegram.js'
-export {
+export type { CustomContext, CustomContextMethods } from './context.ts'
+export type { Bot, Extra } from './telegram.ts'
+export type {
 	Group,
-	User,
 	Poll,
 	UserProfile,
 	Database,
 	DatabaseSchema,
-	ValueState,
-	UserLifeQuality,
 	DayRate
-} from './database.js'
-export { TelegramApiError } from './errors.js'
+} from './database.ts'
+export { ValueState } from './database.ts'
+export { TelegramApiError } from './errors.ts'

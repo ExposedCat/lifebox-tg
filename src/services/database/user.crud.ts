@@ -1,10 +1,26 @@
 import { sql } from 'kysely'
 
-import type { Database, UserProfile } from '../../types/index.js'
-import { getValueState } from '../statistics/get-value-state.js'
-import { getAverageLifeQuality } from './statistics.js'
+import { roundOneDecimal } from '../../helpers/math.ts'
+import type { Database, UserProfile } from '../../types/index.ts'
+import { getValueState } from '../statistics/get-value-state.ts'
+import { getAverageLifeQuality } from './statistics.ts'
 
-const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
+// Upserts the user, rewriting the name only when it actually changed so the
+// hot path (every group message) does not dirty the database.
+async function upsertUser(database: Database, id: number, name: string | null) {
+	await database
+		.insertInto('users')
+		.values({ user_id: id, name })
+		.onConflict(conflict =>
+			name === null
+				? conflict.column('user_id').doNothing()
+				: conflict
+						.column('user_id')
+						.doUpdateSet({ name })
+						.where(sql<boolean>`users.name IS NOT excluded.name`)
+		)
+		.execute()
+}
 
 export async function createUserIfNotExists(
 	database: Database,
@@ -13,43 +29,27 @@ export async function createUserIfNotExists(
 	initialGroupId: number
 ) {
 	await database.transaction().execute(async transaction => {
+		await upsertUser(transaction, id, name || null)
+		// Appends the membership unless the user is already in that group.
 		await transaction
-			.insertInto('users')
-			.values({
-				user_id: id,
-				name: name || null
-			})
-			.onConflict(conflict => conflict.column('user_id').doNothing())
+			.insertInto('user_groups')
+			.columns(['user_id', 'group_id', 'group_index'])
+			.expression(eb =>
+				eb
+					.selectFrom('user_groups')
+					.select([
+						eb.val(id).as('user_id'),
+						eb.val(initialGroupId).as('group_id'),
+						sql<number>`COALESCE(MAX(group_index), -1) + 1`.as('group_index')
+					])
+					.where('user_id', '=', id)
+					.having(
+						sql<number>`COUNT(CASE WHEN group_id = ${initialGroupId} THEN 1 END)`,
+						'=',
+						0
+					)
+			)
 			.execute()
-
-		if (name) {
-			await transaction
-				.updateTable('users')
-				.set({ name })
-				.where('user_id', '=', id)
-				.execute()
-		}
-
-		const existingGroup = await transaction
-			.selectFrom('user_groups')
-			.select('user_id')
-			.where('user_id', '=', id)
-			.where('group_id', '=', initialGroupId)
-			.executeTakeFirst()
-		if (!existingGroup) {
-			await transaction
-				.insertInto('user_groups')
-				.values({
-					user_id: id,
-					group_id: initialGroupId,
-					group_index: sql<number>`(
-						SELECT COALESCE(MAX(group_index), -1) + 1
-						FROM user_groups
-						WHERE user_id = ${id}
-					)`
-				})
-				.execute()
-		}
 	})
 }
 
@@ -62,11 +62,7 @@ export async function updateUserDayRate(
 	date: Date
 ) {
 	await database.transaction().execute(async transaction => {
-		await transaction
-			.insertInto('users')
-			.values({ user_id: id, name })
-			.onConflict(conflict => conflict.column('user_id').doUpdateSet({ name }))
-			.execute()
+		await upsertUser(transaction, id, name)
 
 		const existingRate = await transaction
 			.selectFrom('day_rates')
@@ -106,8 +102,7 @@ export async function updateUserDayRate(
 export async function getUserProfile(
 	database: Database,
 	userId: number,
-	localGroupId: number,
-	calcAverage: boolean
+	localGroupId: number
 ) {
 	const row = await database
 		.selectFrom('users')
@@ -124,13 +119,8 @@ export async function getUserProfile(
 		name: row.name ?? undefined,
 		lifeQuality: roundOneDecimal(Number(row.average ?? 0))
 	}
-
-	let state: string | null = null
-	let averageLifeQuality: number | null = null
-	if (calcAverage) {
-		averageLifeQuality = await getAverageLifeQuality(database, localGroupId)
-		state = getValueState(user.lifeQuality, averageLifeQuality)
-	}
+	const averageLifeQuality = await getAverageLifeQuality(database, localGroupId)
+	const state = getValueState(user.lifeQuality, averageLifeQuality)
 
 	return { user, averageLifeQuality, state }
 }

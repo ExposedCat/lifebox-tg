@@ -1,11 +1,13 @@
 import { Composer, GrammyError } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 
-import { getGroup } from '../services/database/group.crud.js'
-import { updateGroupCustomPollsSetting } from '../services/database/group.settings/custom-polls.js'
-import { updateGroupDailyPollsSetting } from '../services/database/group.settings/daily-polls.js'
-import { updateGroupTagUsersSetting } from '../services/database/group.settings/tag-users.js'
-import type { CustomContext, Database, Group } from '../types/index.js'
+import { isAdmin } from '../config.ts'
+import {
+	getGroup,
+	setGroupTagUser,
+	updateGroupSettings
+} from '../services/database/group.crud.ts'
+import type { CustomContext, Database, Group } from '../types/index.ts'
 
 type SettingOption = {
 	commandId: string
@@ -26,14 +28,16 @@ const OPTIONS: SettingOption[] = [
 		labelKey: 'settings.option.dailyPolls',
 		adminOnly: true,
 		isEnabled: group => group.settings.receiveDailyPolls,
-		set: updateGroupDailyPollsSetting
+		set: (db, group, enabled) =>
+			updateGroupSettings(db, group.groupId, { receiveDailyPolls: enabled })
 	},
 	{
 		commandId: 'cp',
 		labelKey: 'settings.option.customPolls',
 		adminOnly: true,
 		isEnabled: group => group.settings.receiveCustomPolls,
-		set: updateGroupCustomPollsSetting
+		set: (db, group, enabled) =>
+			updateGroupSettings(db, group.groupId, { receiveCustomPolls: enabled })
 	},
 	{
 		commandId: 'rem',
@@ -41,7 +45,7 @@ const OPTIONS: SettingOption[] = [
 		isEnabled: (group, userId) =>
 			group.settings.tagUsers.some(user => user.userId === userId),
 		set: (db, group, enabled, userId) =>
-			updateGroupTagUsersSetting(db, group, userId, enabled)
+			setGroupTagUser(db, group.groupId, userId, enabled)
 	}
 ]
 
@@ -50,7 +54,7 @@ const OPTION_BY_COMMAND_ID = new Map(
 )
 
 function canChangeSetting(option: SettingOption, userId: number) {
-	return !option.adminOnly || String(userId) === process.env.ADMIN_ID
+	return !option.adminOnly || isAdmin(userId)
 }
 
 function escapeHtml(text: string) {

@@ -1,11 +1,9 @@
-import type { Api, Bot as TelegramBot, NextFunction } from 'grammy'
+import type { Api, Bot as TelegramBot } from 'grammy'
 
-import type { CustomContext } from './index.js'
+import type { CustomContext } from './index.ts'
 
 type Bot = TelegramBot<CustomContext>
 
-type Handler = (ctx: CustomContext, next?: NextFunction) => void
-
 type Extra = Parameters<Api['sendMessage']>[2]
 
-export { Bot, Extra, Handler }
+export type { Bot, Extra }

@@ -1,8 +1,8 @@
 import { Composer } from 'grammy'
 
-import { getPoll } from '../services/database/poll.js'
-import { updateUserDayRate } from '../services/index.js'
-import type { CustomContext } from '../types/index.js'
+import { getPoll } from '../services/database/poll.ts'
+import { updateUserDayRate } from '../services/index.ts'
+import type { CustomContext } from '../types/index.ts'
 
 const controller = new Composer<CustomContext>()
 controller.on('poll_answer', async ctx => {

@@ -1,19 +1,8 @@
-import type { Database, Group } from '../../types/index.js'
+import { sql } from 'kysely'
 
-export function createDefaultGroupSettings(): Group['settings'] {
-	return {
-		tagUsers: [],
-		receiveCustomPolls: false,
-		receiveDailyPolls: true
-	}
-}
+import type { Database, DatabaseSchema, Group } from '../../types/index.ts'
 
-type GroupRow = {
-	group_id: number
-	is_channel: number
-	receive_custom_polls: number
-	receive_daily_polls: number
-}
+type GroupRow = DatabaseSchema['groups']
 
 function mapGroup(group: GroupRow, tagUsers: { userId: number }[]): Group {
 	return {
@@ -56,9 +45,9 @@ export async function fetchGroups(database: Database): Promise<Group[]> {
 	])
 	const tagUsersByGroup = new Map<number, { userId: number }[]>()
 	for (const user of tagUsers) {
-		const groupUsers = tagUsersByGroup.get(user.group_id) ?? []
-		groupUsers.push({ userId: user.user_id })
-		tagUsersByGroup.set(user.group_id, groupUsers)
+		const groupUsers = tagUsersByGroup.get(user.group_id)
+		if (groupUsers) groupUsers.push({ userId: user.user_id })
+		else tagUsersByGroup.set(user.group_id, [{ userId: user.user_id }])
 	}
 	return groups.map(group =>
 		mapGroup(group, tagUsersByGroup.get(group.group_id) ?? [])
@@ -90,12 +79,15 @@ export async function getGroup(
 	)
 }
 
+export type GroupPollSettings = Pick<
+	Group['settings'],
+	'receiveCustomPolls' | 'receiveDailyPolls'
+>
+
 export async function updateGroupSettings(
 	database: Database,
-	group: Group,
-	changes: Partial<
-		Pick<Group['settings'], 'receiveCustomPolls' | 'receiveDailyPolls'>
-	>
+	groupId: number,
+	changes: Partial<GroupPollSettings>
 ) {
 	await database
 		.updateTable('groups')
@@ -107,6 +99,44 @@ export async function updateGroupSettings(
 				receive_daily_polls: Number(changes.receiveDailyPolls)
 			})
 		})
-		.where('group_id', '=', group.groupId)
+		.where('group_id', '=', groupId)
+		.execute()
+}
+
+/** Adds or removes a user from the group's daily poll reminder list. */
+export async function setGroupTagUser(
+	database: Database,
+	groupId: number,
+	userId: number,
+	enabled: boolean
+) {
+	if (!enabled) {
+		await database
+			.deleteFrom('group_tag_users')
+			.where('group_id', '=', groupId)
+			.where('user_id', '=', userId)
+			.execute()
+		return
+	}
+
+	// Appends the user unless they are already on the list.
+	await database
+		.insertInto('group_tag_users')
+		.columns(['group_id', 'user_index', 'user_id'])
+		.expression(eb =>
+			eb
+				.selectFrom('group_tag_users')
+				.select([
+					eb.val(groupId).as('group_id'),
+					sql<number>`COALESCE(MAX(user_index), -1) + 1`.as('user_index'),
+					eb.val(userId).as('user_id')
+				])
+				.where('group_id', '=', groupId)
+				.having(
+					sql<number>`COUNT(CASE WHEN user_id = ${userId} THEN 1 END)`,
+					'=',
+					0
+				)
+		)
 		.execute()
 }

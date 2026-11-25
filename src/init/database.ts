@@ -1,28 +1,24 @@
-import BetterSqlite3 from 'better-sqlite3'
-import { Kysely, SqliteDialect, sql } from 'kysely'
+import type { Database as BunDatabase } from 'bun:sqlite'
+import { Kysely, sql } from 'kysely'
 
-import type { Database, DatabaseSchema } from '../types/index.js'
+import type { Database, DatabaseSchema } from '../types/index.ts'
+import { createSqliteDialect, openSqlite } from './sqlite.ts'
 
-function cleanupLegacySchema(sqlite: BetterSqlite3.Database) {
+function cleanupLegacySchema(sqlite: BunDatabase) {
 	const legacyColumn = sqlite.prepare(
 		"SELECT 1 FROM pragma_table_info(?) WHERE name = 'mongo_id'"
 	)
-	const migrate = sqlite.transaction(() => {
+	sqlite.transaction(() => {
 		for (const table of ['users', 'groups', 'polls'] as const) {
 			if (legacyColumn.get(table)) {
-				sqlite.exec(`ALTER TABLE "${table}" DROP COLUMN "mongo_id"`)
+				sqlite.run(`ALTER TABLE "${table}" DROP COLUMN "mongo_id"`)
 			}
 		}
-		sqlite.exec('DROP TABLE IF EXISTS "migration_state"')
-	})
-	migrate()
+		sqlite.run('DROP TABLE IF EXISTS "migration_state"')
+	})()
 }
 
 async function migrateSchema(database: Database) {
-	await sql`PRAGMA foreign_keys = ON`.execute(database)
-	await sql`PRAGMA journal_mode = WAL`.execute(database)
-	await sql`PRAGMA busy_timeout = 5000`.execute(database)
-
 	await database.schema
 		.createTable('users')
 		.ifNotExists()
@@ -71,11 +67,22 @@ async function migrateSchema(database: Database) {
 		)
 		.execute()
 
+	// Covers the everyone-in-a-date-range averages (graph average line, recap)
+	// without touching the table; supersedes the old date-only index.
 	await database.schema
-		.createIndex('day_rates_date_idx')
+		.createIndex('day_rates_date_value_idx')
 		.ifNotExists()
 		.on('day_rates')
-		.column('date')
+		.columns(['date', 'value'])
+		.execute()
+	await database.schema.dropIndex('day_rates_date_idx').ifExists().execute()
+
+	// Every poll answer looks up the user's existing rate for that poll.
+	await database.schema
+		.createIndex('day_rates_user_poll_idx')
+		.ifNotExists()
+		.on('day_rates')
+		.columns(['user_id', 'poll_id'])
 		.execute()
 
 	await database.schema
@@ -135,14 +142,11 @@ async function migrateSchema(database: Database) {
 		.execute()
 }
 
-async function connectToDb(): Promise<Database> {
-	const sqlite = new BetterSqlite3(
-		process.env.SQLITE_PATH ?? 'telegram-bot.sqlite'
-	)
-	sqlite.pragma('busy_timeout = 5000')
+async function connectToDb(path: string): Promise<Database> {
+	const sqlite = openSqlite(path)
 	cleanupLegacySchema(sqlite)
 	const database = new Kysely<DatabaseSchema>({
-		dialect: new SqliteDialect({ database: sqlite })
+		dialect: createSqliteDialect(sqlite)
 	})
 	await migrateSchema(database)
 	return database

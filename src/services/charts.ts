@@ -1,26 +1,30 @@
 import ChartJsImage from 'chartjs-to-image'
-import { randomUUID } from 'node:crypto'
 
-import { COLORS, downloadImage, randomColor } from '../helpers/graph-utils.js'
+const COLORS = [
+	'#ff6384',
+	'#9966ff',
+	'#36a2eb',
+	'#4bc0c0',
+	'#ff9f40',
+	'#c9cbcf'
+]
 
-function makeLabel(date: Date) {
-	const formatter = new Intl.DateTimeFormat('uk', {
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit'
-	})
-	return formatter.format(date)
-}
+const randomColor = () =>
+	`#${Math.floor(Math.random() * 0x1000000)
+		.toString(16)
+		.padStart(6, '0')}`
+
+const labelFormatter = new Intl.DateTimeFormat('uk', {
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit'
+})
+
+const makeLabel = (date: Date) => labelFormatter.format(date)
 
 function makeDatasetData(points: Point[], labels: Set<string>) {
-	const values: Map<string, number> = new Map(
-		points.map(it => [makeLabel(it.date), it.value])
-	)
-	const data: (number | null)[] = []
-	for (const label of labels) {
-		data.push(values.get(label) ?? null)
-	}
-	return data
+	const values = new Map(points.map(it => [makeLabel(it.date), it.value]))
+	return [...labels].map(label => values.get(label) ?? null)
 }
 
 type Point = { date: Date; value: number }
@@ -47,7 +51,8 @@ type DataLabelContext = {
 
 async function generateChart(userDatasets: Dataset[], averagePoints: Point[]) {
 	const labels = new Set(
-		[...userDatasets.flatMap(it => it.points)]
+		userDatasets
+			.flatMap(it => it.points)
 			.sort((a, b) => Number(a.date) - Number(b.date))
 			.map(it => makeLabel(it.date))
 	)
@@ -89,10 +94,7 @@ async function generateChart(userDatasets: Dataset[], averagePoints: Point[]) {
 
 	chart.setChartJsVersion('4.1.1')
 
-	const path = `/tmp/chart-${Date.now()}.png`
-	const url = chart.getUrl()
-	await downloadImage(url, path)
-	return path
+	return chart.toBinary()
 }
 
 async function generateBoardsChart(columns: BoardChartColumn[]) {
@@ -128,11 +130,9 @@ async function generateBoardsChart(columns: BoardChartColumn[]) {
 				? '—'
 				: ''
 		})
-		const values = entries.map(entry => {
-			if (!entry) return ''
-			const average = `${entry.average > 0 ? '+' : ''}${entry.average.toFixed(2)}`
-			return average
-		})
+		const values = entries.map(entry =>
+			entry ? `${entry.average > 0 ? '+' : ''}${entry.average.toFixed(2)}` : ''
+		)
 		const styles = entries.map((entry, columnIndex) =>
 			entry
 				? columnIndex === 2
@@ -218,6 +218,9 @@ async function generateBoardsChart(columns: BoardChartColumn[]) {
 			categoryPercentage: 0.92,
 			plugins: {
 				legend: { display: false },
+				// chartjs-to-image ships these callbacks as source text to the
+				// renderer, so they cannot close over local variables; that is why
+				// poop1..3 repeat themselves instead of coming from a factory.
 				datalabels: {
 					clip: true,
 					labels: {
@@ -293,7 +296,8 @@ async function generateBoardsChart(columns: BoardChartColumn[]) {
 							color: 'rgba(255, 246, 225, 0.5)',
 							font: { size: 21 },
 							formatter() {
-								return '👍'							}
+								return '👍'
+							}
 						},
 						position: {
 							display(context: DataLabelContext) {
@@ -362,9 +366,7 @@ async function generateBoardsChart(columns: BoardChartColumn[]) {
 	chart.setBackgroundColor('#ffffff')
 	chart.setChartJsVersion('4.1.1')
 
-	const path = `/tmp/boards-${randomUUID()}.png`
-	await chart.toFile(path)
-	return path
+	return chart.toBinary()
 }
 
 export { generateBoardsChart, generateChart }

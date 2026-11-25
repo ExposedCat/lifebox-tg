@@ -1,25 +1,18 @@
 import { Composer, InlineKeyboard, InputFile } from 'grammy'
 
-import { generateChart } from '../services/charts.js'
-import { fetchUserRatesGraph } from '../services/database/user.graph.js'
-import { createUserIfNotExists } from '../services/index.js'
-import type { CustomContext } from '../types/index.js'
+import { generateChart } from '../services/charts.ts'
+import { fetchUserRatesGraph } from '../services/index.ts'
+import type { CustomContext } from '../types/index.ts'
 
 const controller = new Composer<CustomContext>()
 controller.chatType(['supergroup', 'group']).command('history', async ctx => {
-	await createUserIfNotExists(
-		ctx.db,
-		ctx.from.id,
-		ctx.from.first_name,
-		ctx.chat.id
-	)
 	const { userDatasets, averagePoints } = await fetchUserRatesGraph({
 		database: ctx.db,
 		userIds: [ctx.from.id],
 		mode: 'halfYear'
 	})
-	const chartFile = await generateChart(userDatasets, averagePoints)
-	await ctx.replyWithPhoto(new InputFile(chartFile), {
+	const chart = await generateChart(userDatasets, averagePoints)
+	await ctx.replyWithPhoto(new InputFile(chart, 'history.png'), {
 		reply_markup: new InlineKeyboard().text(
 			ctx.i18n.t('button.compare'),
 			`compare_${ctx.from.id}`

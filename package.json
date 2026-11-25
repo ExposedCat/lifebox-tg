@@ -1,25 +1,22 @@
 {
 	"name": "lifebox",
 	"version": "1.0.0",
+	"private": true,
 	"description": "Daily mood tracker",
-	"main": "build/index.js",
+	"type": "module",
 	"scripts": {
-		"build": "tsc && npm run copyFiles",
-		"start": "npm run build && node .",
-		"format": "npx biome format src/ --write && npx biome lint src/ --write",
-		"copyFiles": "cp -r src/locales build"
+		"start": "bun src/index.ts",
+		"dev": "bun --watch src/index.ts",
+		"test": "bun --no-env-file test",
+		"typecheck": "tsc --noEmit",
+		"check": "biome check src/",
+		"format": "biome format src/ --write && biome lint src/ --write"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ExposedCat/ts-tg-bot.git"
 	},
-	"keywords": [
-		"telegram",
-		"bot",
-		"api",
-		"typescript",
-		"template"
-	],
+	"keywords": ["telegram", "bot", "api", "typescript", "template"],
 	"author": "ExposedCat",
 	"license": "GPL-3.0-or-later",
 	"bugs": {
@@ -27,27 +24,20 @@
 	},
 	"homepage": "https://github.com/ExposedCat/ts-tg-bot#readme",
 	"dependencies": {
-		"@biomejs/biome": "^1.9.4",
 		"@grammyjs/i18n": "^0.5.1",
 		"@grammyjs/transformer-throttler": "^1.1.2",
-		"better-sqlite3": "^12.6.2",
 		"chartjs-to-image": "^1.2.1",
-		"dotenv": "^16.0.1",
-		"gm": "^1.25.0",
 		"grammy": "^1.46.0",
 		"kysely": "^0.28.8",
 		"node-schedule": "^2.1.0"
 	},
 	"devDependencies": {
-		"@types/better-sqlite3": "^7.6.13",
-		"@types/gm": "^1.25.4",
-		"@types/node": "^18.7.4",
+		"@biomejs/biome": "^1.9.4",
+		"@types/bun": "latest",
 		"@types/node-schedule": "^2.1.0",
 		"typescript": "^5.9.3"
 	},
-	"type": "module",
 	"engines": {
-		"node": ">=20",
-		"npm": ">=2"
+		"bun": ">=1.4"
 	}
 }

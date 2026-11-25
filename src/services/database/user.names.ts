@@ -1,4 +1,4 @@
-import type { Database } from '../../types/index.js'
+import type { Database } from '../../types/index.ts'
 
 export async function getUserNames(
 	database: Database,

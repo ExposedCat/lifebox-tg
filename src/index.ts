@@ -1,3 +1,3 @@
-import { startApp } from './init/index.js'
+import { startApp } from './init/app.ts'
 
-startApp()
+await startApp()

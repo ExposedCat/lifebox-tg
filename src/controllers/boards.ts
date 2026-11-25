@@ -1,9 +1,16 @@
-import fs from 'node:fs/promises'
 import { Composer, InputFile } from 'grammy'
 
-import { generateBoardsChart } from '../services/charts.js'
-import { getLifeQualityBoards } from '../services/index.js'
-import type { CustomContext } from '../types/index.js'
+import { APP_ENV } from '../config.ts'
+import { generateBoardsChart } from '../services/charts.ts'
+import type { BoardUser } from '../services/database/user.graph.ts'
+import { getLifeQualityBoards } from '../services/index.ts'
+import type { CustomContext } from '../types/index.ts'
+
+const toChartEntries = (users: BoardUser[]) =>
+	users.map(user => ({
+		name: (user.name || APP_ENV.UNNAMED).replace(/\s+/g, ' ').trim(),
+		average: user.average
+	}))
 
 async function sendBoards(ctx: CustomContext, groupId: number | null) {
 	const boards = await getLifeQualityBoards(ctx.db, groupId)
@@ -16,31 +23,12 @@ async function sendBoards(ctx: CustomContext, groupId: number | null) {
 		return
 	}
 
-	const toChartEntries = (users: typeof boards.happiest) =>
-		users.map(user => ({
-			name: (user.name || process.env.UNNAMED).replace(/\s+/g, ' ').trim(),
-			average: user.average
-		}))
-	const chartFile = await generateBoardsChart([
-		{
-			title: 'Happiest',
-			entries: toChartEntries(boards.happiest)
-		},
-		{
-			title: 'Saddest',
-			entries: toChartEntries(boards.saddest)
-		},
-		{
-			title: 'Idiots',
-			entries: toChartEntries(boards.idiots)
-		}
+	const chart = await generateBoardsChart([
+		{ title: 'Happiest', entries: toChartEntries(boards.happiest) },
+		{ title: 'Saddest', entries: toChartEntries(boards.saddest) },
+		{ title: 'Idiots', entries: toChartEntries(boards.idiots) }
 	])
-
-	try {
-		await ctx.replyWithPhoto(new InputFile(chartFile))
-	} finally {
-		await fs.rm(chartFile, { force: true })
-	}
+	await ctx.replyWithPhoto(new InputFile(chart, 'boards.png'))
 }
 
 const controller = new Composer<CustomContext>()

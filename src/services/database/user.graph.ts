@@ -1,13 +1,8 @@
-import type { Database, UserLifeQuality } from '../../types/index.js'
-import type { Dataset, Point } from '../charts.js'
-
-function valuesAverage(array: { value: number }[]) {
-	const sum = array.reduce((sum, it) => sum + it.value, 0)
-	return sum / array.length
-}
-
-const forceNonNegative = (it: number) => (it > 0 ? it : 0)
-const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
+import { APP_ENV } from '../../config.ts'
+import { mean } from '../../helpers/math.ts'
+import type { Database } from '../../types/index.ts'
+import type { Dataset, Point } from '../charts.ts'
+import { averageLifeQuality, getUserAverages } from './statistics.ts'
 
 const BOARD_SIZE = 10
 const MIN_BOARD_VOTES = 10
@@ -40,27 +35,37 @@ export async function getLifeQualityBoards(
 ): Promise<LifeQualityBoards> {
 	const halfYearAgo = new Date()
 	halfYearAgo.setMonth(halfYearAgo.getMonth() - 6)
-	const rateCount = database.fn.count<number>('day_rates.value')
-	const lastRateDate = database.fn.max<number>('day_rates.date')
-	const query = database
-		.selectFrom('users')
-		.innerJoin('day_rates', 'day_rates.user_id', 'users.user_id')
+	// Aggregating per user before joining lets SQLite walk day_rates in
+	// primary-key order instead of sorting every rate for the GROUP BY.
+	let stats = database
+		.selectFrom('day_rates')
+		.select(eb => [
+			'user_id',
+			eb.fn.avg<number>('value').as('average'),
+			eb.fn.count<number>('value').as('rate_count'),
+			eb.fn.max<number>('date').as('last_rate')
+		])
+		.where('value', 'is not', null)
+		.groupBy('user_id')
+	if (groupId !== null) {
+		stats = stats.where('user_id', 'in', eb =>
+			eb
+				.selectFrom('user_groups')
+				.select('user_id')
+				.where('group_id', '=', groupId)
+		)
+	}
+	const rows = await database
+		.selectFrom(stats.as('stats'))
+		.innerJoin('users', 'users.user_id', 'stats.user_id')
 		.select([
 			'users.user_id',
 			'users.name',
-			database.fn.avg('day_rates.value').as('average'),
-			rateCount.as('rate_count')
+			'stats.average',
+			'stats.rate_count'
 		])
-		.where('day_rates.value', 'is not', null)
-	const rows = await (groupId === null
-		? query
-		: query
-				.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
-				.where('user_groups.group_id', '=', groupId)
-	)
-		.groupBy(['users.user_id', 'users.name'])
-		.having(rateCount, '>=', MIN_BOARD_VOTES)
-		.having(lastRateDate, '>=', halfYearAgo.getTime())
+		.where('stats.rate_count', '>=', MIN_BOARD_VOTES)
+		.where('stats.last_rate', '>=', halfYearAgo.getTime())
 		.execute()
 
 	const users: BoardUser[] = rows.map(row => ({
@@ -74,14 +79,14 @@ export async function getLifeQualityBoards(
 	const byUserId = (a: BoardUser, b: BoardUser) => a.userId - b.userId
 
 	return {
-		happiest: [...rankedUsers]
-			.sort((a, b) => b.average - a.average || byUserId(a, b))
+		happiest: rankedUsers
+			.toSorted((a, b) => b.average - a.average || byUserId(a, b))
 			.slice(0, BOARD_SIZE),
-		saddest: [...rankedUsers]
-			.sort((a, b) => a.average - b.average || byUserId(a, b))
+		saddest: rankedUsers
+			.toSorted((a, b) => a.average - b.average || byUserId(a, b))
 			.slice(0, BOARD_SIZE),
-		idiots: [...idiots]
-			.sort(
+		idiots: idiots
+			.toSorted(
 				(a, b) =>
 					Math.abs(b.average) - Math.abs(a.average) ||
 					b.rateCount - a.rateCount ||
@@ -91,21 +96,55 @@ export async function getLifeQualityBoards(
 	}
 }
 
+export type GraphMode = 'week' | 'month' | 'halfYear' | 'year' | 'all'
+
+function graphStart(mode: GraphMode) {
+	const date = new Date()
+	switch (mode) {
+		case 'week':
+			date.setDate(date.getDate() - 7)
+			break
+		case 'month':
+			date.setMonth(date.getMonth() - 1)
+			break
+		case 'halfYear':
+			date.setMonth(date.getMonth() - 6)
+			break
+		case 'year':
+			date.setFullYear(date.getFullYear() - 1)
+			break
+		case 'all':
+			date.setFullYear(2004)
+			break
+	}
+	return date
+}
+
+/** How many previous points each smoothed point averages over. */
+const SMOOTHING_STEP: Record<GraphMode, number> = {
+	week: 2,
+	month: 4,
+	halfYear: 7,
+	year: 14,
+	all: 14
+}
+
+function smooth(data: Point[], step: number): Point[] {
+	return data.map((point, i) => ({
+		date: point.date,
+		value: mean(data.slice(Math.max(0, i - step), i + 1).map(it => it.value))
+	}))
+}
+
 export async function fetchUserRatesGraph(args: {
 	database: Database
 	userIds: number[]
-	mode: 'week' | 'month' | 'halfYear' | 'year' | 'all'
+	mode: GraphMode
 }) {
 	const { database, userIds, mode } = args
-	const maxRates = {
-		week: new Date(new Date().setDate(new Date().getDate() - 7)),
-		month: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-		halfYear: new Date(new Date().setMonth(new Date().getMonth() - 6)),
-		year: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
-		all: new Date(new Date().setFullYear(2004))
-	}[mode]
+	const since = graphStart(mode).getTime()
 
-	const [users, userRates, allRates] = await Promise.all([
+	const [users, userRates, averages] = await Promise.all([
 		database
 			.selectFrom('users')
 			.select(['user_id', 'name'])
@@ -115,109 +154,64 @@ export async function fetchUserRatesGraph(args: {
 			.selectFrom('day_rates')
 			.select(['user_id', 'date', 'value'])
 			.where('user_id', 'in', userIds)
-			.where('date', '>=', maxRates.getTime())
-			.where('date', 'is not', null)
+			.where('date', '>=', since)
 			.where('value', 'is not', null)
 			.orderBy('date')
 			.orderBy('rate_index')
+			.$narrowType<{ date: number; value: number }>()
 			.execute(),
+		// Everyone's mean per poll date, aggregated in SQLite.
 		database
 			.selectFrom('day_rates')
-			.select(['date', 'value'])
-			.where('date', '>=', maxRates.getTime())
-			.where('date', 'is not', null)
+			.select(eb => ['date', eb.fn.avg<number>('value').as('value')])
+			.where('date', '>=', since)
 			.where('value', 'is not', null)
+			.groupBy('date')
 			.orderBy('date')
+			.$narrowType<{ date: number }>()
 			.execute()
 	])
 
 	const ratesByUser = new Map<number, Point[]>()
 	for (const rate of userRates) {
-		if (rate.date === null || rate.value === null) continue
-		const rates = ratesByUser.get(rate.user_id) ?? []
-		rates.push({ date: new Date(rate.date), value: rate.value })
-		ratesByUser.set(rate.user_id, rates)
+		const point = { date: new Date(rate.date), value: rate.value }
+		const rates = ratesByUser.get(rate.user_id)
+		if (rates) rates.push(point)
+		else ratesByUser.set(rate.user_id, [point])
 	}
 
-	const valuesByDate = new Map<number, number[]>()
-	for (const rate of allRates) {
-		if (rate.date === null || rate.value === null) continue
-		const values = valuesByDate.get(rate.date) ?? []
-		values.push(rate.value)
-		valuesByDate.set(rate.date, values)
-	}
-	const average: Point[] = [...valuesByDate.entries()].map(
-		([date, values]) => ({
-			date: new Date(date),
-			value: values.reduce((sum, value) => sum + value, 0) / values.length
-		})
-	)
+	const average: Point[] = averages.map(row => ({
+		date: new Date(row.date),
+		value: row.value
+	}))
 	if (average.length === 1) {
 		average.push(average[0])
 	}
 
-	const step = {
-		week: 2,
-		month: 4,
-		halfYear: 7,
-		year: 14,
-		all: 14
-	}[mode]
-
-	const mapToAverage = (data: Point[]): Point[] =>
-		data.map((it, i) => ({
-			date: it.date,
-			value: valuesAverage(data.slice(forceNonNegative(i - step), i + 1))
-		}))
-
+	const step = SMOOTHING_STEP[mode]
 	const userDatasets: Dataset[] = users.map(user => ({
 		userId: user.user_id,
 		label: user.name ?? `User#${user.user_id}`,
-		points: mapToAverage(ratesByUser.get(user.user_id) ?? [])
+		points: smooth(ratesByUser.get(user.user_id) ?? [], step)
 	}))
-	const averagePoints: Point[] = mapToAverage(average)
+	const averagePoints = smooth(average, step)
 
 	return { userDatasets, averagePoints }
 }
 
 export async function getTopLifeUsers(database: Database, groupId: number) {
-	const rows = await database
-		.selectFrom('users')
-		.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
-		.innerJoin('day_rates', 'day_rates.user_id', 'users.user_id')
-		.select(['users.user_id', 'users.name', 'day_rates.value'])
-		.where('user_groups.group_id', '=', groupId)
-		.execute()
-
-	const users = new Map<
-		number,
-		{ name: string | null; values: (number | null)[] }
-	>()
-	for (const row of rows) {
-		const user = users.get(row.user_id) ?? { name: row.name, values: [] }
-		user.values.push(row.value)
-		users.set(row.user_id, user)
-	}
-
-	const allUsers: UserLifeQuality[] = [...users.values()]
-		.map(user => ({
-			name: user.name ?? undefined,
-			lifeQuality: roundOneDecimal(
-				user.values.reduce<number>((sum, value) => sum + (value ?? 0), 0) /
-					user.values.length
-			)
-		}))
-		.sort((a, b) => b.lifeQuality - a.lifeQuality)
-
-	if (allUsers.length === 0) {
+	const users = await getUserAverages(database, groupId)
+	if (users.length === 0) {
 		return { list: [], average: 0 }
 	}
-
-	const average = roundOneDecimal(
-		allUsers.reduce((sum, user) => sum + user.lifeQuality, 0) / allUsers.length
-	)
 	return {
-		list: allUsers.slice(0, Number(process.env.RATING_LIMIT)),
-		average
+		list: users
+			.toSorted((a, b) => b.lifeQuality - a.lifeQuality)
+			.slice(0, APP_ENV.RATING_LIMIT)
+			.map(user => ({
+				name: user.name ?? undefined,
+				lifeQuality: user.lifeQuality
+			})),
+		average: averageLifeQuality(users)
 	}
 }

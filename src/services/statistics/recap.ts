@@ -1,63 +1,44 @@
-import type { Database } from '../../types/index.js'
+import { mean } from '../../helpers/math.ts'
+import type { Database } from '../../types/index.ts'
 import {
-	getUserDailyRates,
-	getUserMonthlyRates
-} from '../database/statistics.js'
-import { fetchUserRatesGraph } from '../database/user.graph.js'
+	getAverageRateInRange,
+	getRatesInRange,
+	groupRatesByMonth
+} from '../database/statistics.ts'
 
-function getLongestRateStreak(dataPoints: { date: Date }[]) {
+const DAY_MS = 24 * 60 * 60 * 1000
+
+export function getLongestRateStreak(dataPoints: { date: Date }[]) {
 	if (dataPoints.length === 0) return 0
 
 	let maxLength = 1
 	let currentLength = 1
-
 	for (let i = 1; i < dataPoints.length; i++) {
 		const diffTime =
 			dataPoints[i].date.getTime() - dataPoints[i - 1].date.getTime()
-		if (diffTime <= 24 * 60 * 60 * 1000) {
-			currentLength++
-			if (currentLength > maxLength) {
-				maxLength = currentLength
-			}
-		} else {
-			currentLength = 1
-		}
+		currentLength = diffTime <= DAY_MS ? currentLength + 1 : 1
+		maxLength = Math.max(maxLength, currentLength)
 	}
-
 	return maxLength
 }
 
-function getLongestValueStreaks(dataPoints: { value: number }[]) {
-	if (dataPoints.length === 0) return { positive: 0, neutral: 0, negative: 0 }
-
-	let currentPositive = dataPoints[0].value > 0 ? 1 : 0
-	let currentNeutral = dataPoints[0].value === 0 ? 1 : 0
-	let currentNegative = dataPoints[0].value < 0 ? 1 : 0
-
-	let positiveStreak = currentPositive
-	let neutralStreak = currentNeutral
-	let negativeStreak = currentNegative
-
-	for (const { value } of dataPoints.slice(1)) {
-		if (value > 0) {
-			currentPositive += 1
-			positiveStreak = Math.max(positiveStreak, currentPositive)
-			currentNeutral = 0
-			currentNegative = 0
-		} else if (value === 0) {
-			currentNeutral += 1
-			neutralStreak = Math.max(neutralStreak, currentNeutral)
-			currentPositive = 0
-			currentNegative = 0
-		} else {
-			currentNegative += 1
-			negativeStreak = Math.max(negativeStreak, currentNegative)
-			currentPositive = 0
-			currentNeutral = 0
-		}
+export function getLongestValueStreaks(dataPoints: { value: number }[]) {
+	const longest = { positiveStreak: 0, neutralStreak: 0, negativeStreak: 0 }
+	let current = 0
+	let previousSign = 0
+	for (const { value } of dataPoints) {
+		const sign = Math.sign(value)
+		current = current > 0 && sign === previousSign ? current + 1 : 1
+		previousSign = sign
+		const key =
+			sign > 0
+				? 'positiveStreak'
+				: sign < 0
+					? 'negativeStreak'
+					: 'neutralStreak'
+		longest[key] = Math.max(longest[key], current)
 	}
-
-	return { positiveStreak, neutralStreak, negativeStreak }
+	return longest
 }
 
 function getMonth(
@@ -81,45 +62,28 @@ function getMonth(
 	}
 }
 
-async function getUserRecap(database: Database, userId: number, year: number) {
-	const commonMonths = await getUserMonthlyRates(
-		database,
-		null,
-		new Date(year, 0, 1, 1),
-		new Date(year + 1, 0, 1)
-	)
-	const commonRates = commonMonths.flatMap(month => month.rates)
-	const commonAverage =
-		commonRates.reduce((sum, { value }) => sum + value, 0) / commonRates.length
+// Years start at 01:00 local time, matching how the recap was always counted.
+const yearStart = (year: number) => new Date(year, 0, 1, 1)
+const yearEnd = (year: number) => new Date(year + 1, 0, 1)
 
-	const rawMonths = await getUserMonthlyRates(
-		database,
-		userId,
-		new Date(year, 0, 1, 1),
-		new Date(year + 1, 0, 1)
-	)
-	const rates = rawMonths.flatMap(month => month.rates)
-	const userAverage =
-		rates.reduce((sum, { value }) => sum + value, 0) / rates.length
-
-	const rawMonthsPrev = await getUserMonthlyRates(
-		database,
-		userId,
-		new Date(year - 1, 0, 1, 1),
-		new Date(year - 1 + 1, 0, 1)
-	)
-	const ratesPrev = rawMonthsPrev.flatMap(month => month.rates)
-	const userAveragePrev =
-		ratesPrev.reduce((sum, { value }) => sum + value, 0) / ratesPrev.length
-
-	const rawDays = await getUserDailyRates(
-		database,
-		userId,
-		new Date(year, 0, 1, 1),
-		new Date(year + 1, 0, 1)
-	)
-	const rateStreak = getLongestRateStreak(rawDays)
-	const valueStreaks = getLongestValueStreaks(rawDays)
+export async function getUserRecap(
+	database: Database,
+	userId: number,
+	year: number
+) {
+	const [commonAverage, rates, userAveragePrev] = await Promise.all([
+		getAverageRateInRange(database, null, yearStart(year), yearEnd(year)),
+		getRatesInRange(database, userId, yearStart(year), yearEnd(year)),
+		getAverageRateInRange(
+			database,
+			userId,
+			yearStart(year - 1),
+			yearEnd(year - 1)
+		)
+	])
+	const rawMonths = groupRatesByMonth(rates)
+	const rawDays = rates.map(({ date, value }) => ({ date, value }))
+	const userAverage = mean(rates.map(rate => rate.value))
 
 	return {
 		days: rates.length,
@@ -130,11 +94,9 @@ async function getUserRecap(database: Database, userId: number, year: number) {
 		happierPrevBy: (userAverage - userAveragePrev) * 100,
 		rawMonths,
 		rawDays,
-		rateStreak,
-		...valueStreaks,
+		rateStreak: getLongestRateStreak(rawDays),
+		...getLongestValueStreaks(rawDays),
 		worstMonth: getMonth('worst', rawMonths),
 		happiestMonth: getMonth('happiest', rawMonths)
 	}
 }
-
-export { getUserRecap }

@@ -1,19 +1,12 @@
-import { ValueState } from '../../types/index.js'
+import { APP_ENV } from '../../config.ts'
+import { ValueState } from '../../types/index.ts'
 
-function getValueState(value: number, average: number) {
-	let state = ValueState.Normal
-	const lowPercent = Number(process.env.VALUE_SMALL_PERCENT) / 100
-	const lowLimit = average * lowPercent
-	if (value <= lowLimit) {
-		state = ValueState.Low
-	} else {
-		const highPercent = Number(process.env.VALUE_HIGH_PERCENT) / 100
-		const highLimit = average * highPercent
-		if (value >= highLimit) {
-			state = ValueState.High
-		}
+export function getValueState(value: number, average: number) {
+	if (value <= average * (APP_ENV.VALUE_SMALL_PERCENT / 100)) {
+		return ValueState.Low
 	}
-	return state
+	if (value >= average * (APP_ENV.VALUE_HIGH_PERCENT / 100)) {
+		return ValueState.High
+	}
+	return ValueState.Normal
 }
-
-export { getValueState }

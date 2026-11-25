@@ -1,6 +1,20 @@
 # LifeBox Telegram Bot
 
-LifeBox uses SQLite for all persistence.
+LifeBox runs on [Bun](https://bun.sh) (1.4+) and uses SQLite (`bun:sqlite`)
+for all persistence.
+
+## Development
+
+```bash
+bun install
+bun run dev        # watch mode; Bun loads .env automatically
+bun run test       # unit tests against in-memory SQLite
+bun run typecheck
+bun run check      # biome format + lint
+```
+
+Copy `.env.example` to `.env` and fill in the real values first. There is no
+build step: Bun runs the TypeScript sources directly.
 
 ## Run with Podman Compose
 

@@ -1,114 +1,118 @@
-import type { Database, DayRate } from '../../types/index.js'
+import { sql } from 'kysely'
 
-const roundOneDecimal = (value: number) => Math.round(value * 10) / 10
+import { mean, roundOneDecimal } from '../../helpers/math.ts'
+import type { Database, DayRate } from '../../types/index.ts'
 
-async function getAverageLifeQuality(
+export type UserAverage = {
+	userId: number
+	name: string | null
+	/** Mean of all the user's rates (missing values count as 0), 1 decimal. */
+	lifeQuality: number
+}
+
+/**
+ * Per-user life quality, optionally limited to members of a group. Averaging
+ * happens in SQLite so only one row per user leaves the database.
+ */
+export async function getUserAverages(
 	database: Database,
 	groupId: number | null
-) {
-	let query = database
+): Promise<UserAverage[]> {
+	let averages = database
 		.selectFrom('day_rates')
-		.innerJoin('users', 'users.user_id', 'day_rates.user_id')
-		.select(['day_rates.user_id', 'day_rates.value'])
-
+		.select(['user_id', sql<number>`AVG(COALESCE(value, 0))`.as('average')])
+		.groupBy('user_id')
 	if (groupId !== null) {
-		query = query
-			.innerJoin('user_groups', 'user_groups.user_id', 'users.user_id')
-			.where('user_groups.group_id', '=', groupId)
-	}
-
-	const rows = await query.execute()
-	const values = new Map<number, (number | null)[]>()
-	for (const row of rows) {
-		const userValues = values.get(row.user_id) ?? []
-		userValues.push(row.value)
-		values.set(row.user_id, userValues)
-	}
-
-	const userAverages = [...values.values()].map(userValues =>
-		roundOneDecimal(
-			userValues.reduce<number>((sum, value) => sum + (value ?? 0), 0) /
-				userValues.length
+		averages = averages.where('user_id', 'in', eb =>
+			eb
+				.selectFrom('user_groups')
+				.select('user_id')
+				.where('group_id', '=', groupId)
 		)
-	)
-	if (userAverages.length === 0) {
-		return 0
 	}
-	return roundOneDecimal(
-		userAverages.reduce((sum, value) => sum + value, 0) / userAverages.length
-	)
-}
-
-type RateRow = {
-	poll_id: string
-	date: number | null
-	value: number | null
-}
-
-function mapCompleteRate(row: RateRow): DayRate | null {
-	if (row.date === null || row.value === null) {
-		return null
-	}
-	return {
-		pollId: row.poll_id,
-		date: new Date(row.date),
-		value: row.value
-	}
-}
-
-async function getRatesInRange(
-	database: Database,
-	userId: number | null,
-	since: Date,
-	to: Date
-) {
-	let query = database
-		.selectFrom('day_rates')
-		.select(['poll_id', 'date', 'value'])
-		.where('date', '>=', since.getTime())
-		.where('date', '<', to.getTime())
-		.orderBy('date')
-		.orderBy('rate_index')
-	if (userId !== null) {
-		query = query.where('user_id', '=', userId)
-	}
-	const rows = await query.execute()
-	return rows
-		.map(mapCompleteRate)
-		.filter((rate): rate is DayRate => rate !== null)
-}
-
-async function getUserMonthlyRates(
-	database: Database,
-	userId: number | null,
-	since: Date,
-	to: Date
-) {
-	const rates = await getRatesInRange(database, userId, since, to)
-	const months = new Map<string, DayRate[]>()
-	for (const rate of rates) {
-		const key = `${rate.date.getUTCFullYear()}-${rate.date.getUTCMonth()}`
-		const monthRates = months.get(key) ?? []
-		monthRates.push(rate)
-		months.set(key, monthRates)
-	}
-
-	return [...months.values()].map(monthRates => ({
-		date: monthRates[0].date,
-		rates: monthRates,
-		average:
-			monthRates.reduce((sum, rate) => sum + rate.value, 0) / monthRates.length
+	const rows = await database
+		.selectFrom(averages.as('averages'))
+		.innerJoin('users', 'users.user_id', 'averages.user_id')
+		.select(['users.user_id', 'users.name', 'averages.average'])
+		.orderBy('users.user_id')
+		.execute()
+	return rows.map(row => ({
+		userId: row.user_id,
+		name: row.name,
+		lifeQuality: roundOneDecimal(row.average)
 	}))
 }
 
-async function getUserDailyRates(
+/** Mean of the per-user life qualities; 0 when nobody has rated yet. */
+export function averageLifeQuality(users: UserAverage[]) {
+	if (users.length === 0) return 0
+	return roundOneDecimal(mean(users.map(user => user.lifeQuality)))
+}
+
+export async function getAverageLifeQuality(
+	database: Database,
+	groupId: number | null
+) {
+	return averageLifeQuality(await getUserAverages(database, groupId))
+}
+
+/** Complete rates (date and value set) in `[since, to)`, oldest first. */
+export async function getRatesInRange(
+	database: Database,
+	userId: number,
+	since: Date,
+	to: Date
+): Promise<DayRate[]> {
+	const rows = await database
+		.selectFrom('day_rates')
+		.select(['poll_id', 'date', 'value'])
+		.where('user_id', '=', userId)
+		.where('date', '>=', since.getTime())
+		.where('date', '<', to.getTime())
+		.where('value', 'is not', null)
+		.orderBy('date')
+		.orderBy('rate_index')
+		.$narrowType<{ date: number; value: number }>()
+		.execute()
+	return rows.map(row => ({
+		pollId: row.poll_id,
+		date: new Date(row.date),
+		value: row.value
+	}))
+}
+
+/** Mean rate in `[since, to)` across everyone or one user; NaN if none. */
+export async function getAverageRateInRange(
 	database: Database,
 	userId: number | null,
 	since: Date,
 	to: Date
 ) {
-	const rates = await getRatesInRange(database, userId, since, to)
-	return rates.map(({ date, value }) => ({ date, value }))
+	let query = database
+		.selectFrom('day_rates')
+		.select(eb => eb.fn.avg<number | null>('value').as('average'))
+		.where('date', '>=', since.getTime())
+		.where('date', '<', to.getTime())
+		.where('value', 'is not', null)
+	if (userId !== null) {
+		query = query.where('user_id', '=', userId)
+	}
+	const row = await query.executeTakeFirst()
+	return row?.average ?? Number.NaN
 }
 
-export { getAverageLifeQuality, getUserMonthlyRates, getUserDailyRates }
+/** Groups chronologically ordered rates by UTC month. */
+export function groupRatesByMonth(rates: DayRate[]) {
+	const months = new Map<string, DayRate[]>()
+	for (const rate of rates) {
+		const key = `${rate.date.getUTCFullYear()}-${rate.date.getUTCMonth()}`
+		const monthRates = months.get(key)
+		if (monthRates) monthRates.push(rate)
+		else months.set(key, [rate])
+	}
+	return [...months.values()].map(monthRates => ({
+		date: monthRates[0].date,
+		rates: monthRates,
+		average: mean(monthRates.map(rate => rate.value))
+	}))
+}

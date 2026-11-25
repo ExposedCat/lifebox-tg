@@ -22,13 +22,6 @@ type DayRate = {
 	value: number
 }
 
-type User = {
-	userId: number
-	name: string | undefined
-	groups: number[]
-	dayRates: DayRate[]
-}
-
 type DatabaseSchema = {
 	users: {
 		user_id: number
@@ -75,21 +68,7 @@ type UserProfile = {
 	lifeQuality: number
 }
 
-type UserLifeQuality = {
-	name?: string
-	lifeQuality: number
-}
-
 type Database = Kysely<DatabaseSchema>
 
-export {
-	Group,
-	User,
-	Poll,
-	UserProfile,
-	UserLifeQuality,
-	Database,
-	DatabaseSchema,
-	ValueState,
-	DayRate
-}
+export type { Group, Poll, UserProfile, Database, DatabaseSchema, DayRate }
+export { ValueState }

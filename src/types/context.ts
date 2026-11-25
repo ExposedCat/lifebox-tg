@@ -1,7 +1,7 @@
-import type { Context, SessionFlavor } from 'grammy'
 import type { I18nContextFlavor, TemplateData } from '@grammyjs/i18n'
+import type { Context, SessionFlavor } from 'grammy'
 
-import type { Extra, Database } from './index.js'
+import type { Database, Extra } from './index.ts'
 
 interface Custom<C extends Context> {
 	text: (
@@ -19,4 +19,4 @@ type CustomContext = Context &
 	I18nContextFlavor &
 	SessionFlavor<NonNullable<unknown>>
 
-export { CustomContext, CustomContextMethods }
+export type { CustomContext, CustomContextMethods }

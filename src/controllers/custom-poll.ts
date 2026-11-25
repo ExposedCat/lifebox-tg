@@ -1,29 +1,27 @@
 import type { I18n } from '@grammyjs/i18n'
 import { Composer } from 'grammy'
 
-import { fetchGroups } from '../services/index.js'
-import { proxyPoll } from '../services/telegram/proxy-poll.js'
-import { resendPoll } from '../services/telegram/send-poll-job.js'
-import type { CustomContext } from '../types/index.js'
+import { APP_ENV, isAdmin } from '../config.ts'
+import { fetchGroups } from '../services/index.ts'
+import { proxyPoll } from '../services/telegram/proxy-poll.ts'
+import { resendPoll } from '../services/telegram/send-poll-job.ts'
+import type { CustomContext } from '../types/index.ts'
 
 function sendCustomPollController(i18n: I18n) {
 	const controller = new Composer<CustomContext>()
 	controller
 		.chatType(['supergroup', 'group'])
 		.command('custom_poll', async ctx => {
-			if (!ctx.from) {
-				return
-			}
 			if (!ctx.message.reply_to_message?.poll) {
 				await ctx.text('error.invalidCustomPoll')
 				return
 			}
-			if (ctx.from.id !== Number(process.env.ADMIN_ID)) {
+			if (!isAdmin(ctx.from.id)) {
 				await ctx.text('error.noRightsForCustomPoll')
 				return
 			}
 
-			const publicPollChatId = Number(process.env.PUBLIC_POLLS_CHAT_ID)
+			const publicPollChatId = APP_ENV.PUBLIC_POLLS_CHAT_ID
 
 			const result = await proxyPoll({
 				api: ctx.api,
@@ -39,15 +37,9 @@ function sendCustomPollController(i18n: I18n) {
 			}
 
 			const groups = await fetchGroups(ctx.db)
-			let totalGroups = 0
-			let globalTotalGroups = 0
+			const targets = groups.filter(group => group.settings.receiveCustomPolls)
 			let success = 0
-			for (const group of groups) {
-				globalTotalGroups += 1
-				if (!group.settings.receiveCustomPolls) {
-					continue
-				}
-				totalGroups += 1
+			for (const group of targets) {
 				try {
 					await resendPoll({
 						database: ctx.db,
@@ -57,15 +49,15 @@ function sendCustomPollController(i18n: I18n) {
 						messageId: result.messageId,
 						firstGroupId: publicPollChatId
 					})
-				} catch {
-					// Ignore
+					success += 1
+				} catch (error) {
+					console.warn(`Bot | Custom poll failed for ${group.groupId}:`, error)
 				}
-				success += 1
 			}
 			await ctx.text('result.customPoll', {
-				total: totalGroups,
+				total: targets.length,
 				success,
-				globalTotal: globalTotalGroups
+				globalTotal: groups.length
 			})
 		})
 	return controller
